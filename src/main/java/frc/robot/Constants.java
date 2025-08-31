@@ -34,4 +34,30 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
+
+  public static final class CanBusConstants {
+    public static final String CANIVORE_BUS = "canivore";
+  }
+
+  public static final class HopperConstants {
+    public static final int PRIMARY_CAN_ID = 32;
+    public static final int SECONDARY_CAN_ID = 31;
+    // Hopper speed constant (placeholder value; adjust as needed)
+    public static final double START_VOLTAGE = 3.5;
+    public static final double STOP_VOLTAGE = 0.0;
+  }
+
+  public static final class MapConstants {
+    public static final String ELEVATOR_POSITION = "elevatorPosition";
+    public static final String END_EFFECTOR_VOLTAGE = "endEffectorVoltage";
+    public static final String HOPPER_VOLTAGE = "hopperVoltage";
+    public static final String CLIMBER_POSITION = "climberPosition";
+    public static final String WRIST_POSITION = "wristPosition";
+    public static final String INTAKE_VOLTAGE = "intakeSpeed";
+    public static final String POSE = "pose";
+    public static final String TARGET_ROTATION = "targetRotation";
+    public static final String TARGET_POSE = "targetPose";
+    public static final String HAS_PIECE = "hasPiece";
+    public static final String AUTO = "auto";
+  }
 }
