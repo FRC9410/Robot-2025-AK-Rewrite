@@ -25,8 +25,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants.AlgaeIntakeConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.AlgaeIntakeSubsystem;
+import frc.robot.subsystems.AlgaeWristSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.StateMachine;
 import frc.robot.subsystems.drive.Drive;
@@ -38,6 +41,9 @@ import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.vision.Vision;
 import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
 import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
+
+import javax.lang.model.type.NullType;
+
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 
@@ -51,8 +57,11 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Vision vision;
-  private final HopperSubsystem hopper;
+  private final RobotContainer robotContainer = this;
   private final StateMachine stateMachine;
+  private final HopperSubsystem hopperSubsystem;
+  private final AlgaeWristSubsystem algaeWristSubsystem;
+  private final AlgaeIntakeSubsystem algaeIntakeSubsystem;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -63,8 +72,10 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    hopper = new HopperSubsystem();
-    stateMachine = new StateMachine(hopper);
+    hopperSubsystem = new HopperSubsystem();
+    algaeWristSubsystem = new AlgaeWristSubsystem(null);
+    algaeIntakeSubsystem = new AlgaeIntakeSubsystem(null);
+    stateMachine = new StateMachine(hopperSubsystem, algaeWristSubsystem, algaeIntakeSubsystem);
 
     switch (Constants.currentMode) {
       case REAL:
@@ -180,10 +191,23 @@ public class RobotContainer {
 
     controller // Coral intake input
         .y()
-        .onTrue(statemachine.setStateCommand(StateMachine.WantedRobotState.INTAKE_CORAL))
-        .onFalse(statemachine.setStateCommand(StateMachine.WantedRobotState.DEFAULT_STATE));
+        .onTrue(stateMachine.setWantedState(StateMachine.WantedRobotState.INTAKE_CORAL))
+        .onFalse(stateMachine.setWantedState(StateMachine.WantedRobotState.DEFAULT_STATE));
   }
   
+  public HopperSubsystem getHopper() {
+    return hopperSubsystem;
+  }
+  
+  public Drive getDrive() {
+    return drive;
+  }
+
+  public RobotContainer getRobotContainer() {
+    return robotContainer;
+  }
+
+
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

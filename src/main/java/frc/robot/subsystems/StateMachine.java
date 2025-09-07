@@ -5,18 +5,26 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.RobotContainer;
+import frc.robot.Constants.AlgaeIntakeConstants;
+import frc.robot.Constants.AlgaeWristConstants;
+import edu.wpi.first.wpilibj2.command.Command;
+import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 
 
 public class StateMachine extends SubsystemBase {
+  HopperSubsystem hopperSubsystem;
+  AlgaeWristSubsystem algaeWristSubsystem;
+  AlgaeIntakeSubsystem algaeIntakeSubsystem;
 
-  /** Creates a new StateMachine. */
-  public StateMachine(
-    HopperSubsystem hopperSubsystem
-  ) {}
+  public StateMachine(HopperSubsystem hopper, AlgaeWristSubsystem algaeWrist, AlgaeIntakeSubsystem algaeIntake) {
+    this.hopperSubsystem = hopper;
+    this.algaeWristSubsystem = algaeWrist;
+    this.algaeIntakeSubsystem = algaeIntake;
+  }
 
   public enum WantedRobotState {
-    HOME,
-    STOPPED,
     DEFAULT_STATE, // This is the default state when the robot is not doing anything
     CLIMB,
     INTAKE_CORAL,
@@ -35,14 +43,12 @@ public class StateMachine extends SubsystemBase {
   }
 
   public enum CurrentRobotState {
-    HOME,
-    DEFAULT_STATE,
-    STOPPED,
+    DEFAULT_STATE, // This is the default state when the robot is not doing anything
     CLIMB,
     INTAKE_CORAL,
     INTAKE_ALGAE_LOWER,
     INTAKE_ALGAE_UPPER,
-    INTAKE_GROUND,
+    INTAKE_ALGAE_GROUND,
     SCORE_ALGAE_PROCESSOR,
     CORAL_SCORE_L1_LEFT,
     CORAL_SCORE_L2_LEFT,
@@ -54,172 +60,148 @@ public class StateMachine extends SubsystemBase {
     CORAL_SCORE_L4_RIGHT
   }
 
-  private WantedRobotState wantedRobotState = WantedRobotState.STOPPED;
-  private CurrentRobotState currentRobotState = CurrentRobotState.STOPPED;
+  private WantedRobotState wantedRobotState = WantedRobotState.DEFAULT_STATE;
+  private CurrentRobotState currentRobotState = CurrentRobotState.DEFAULT_STATE;
   private CurrentRobotState previousRobotState;
+
 
   @Override
   public void periodic() {
-    currentRobotState = handleRobotStateTransitions();
-    applyStates();
-  }
-
-  private stop(enum previousState) {
-    switch (previousState) {
-      case Intake_CORAL:
-        intake_coral.exit();
-        break;
-
-    }
-  }
-  //This method handles the exit of a previous state, like intake_coral.exit() turning off the motors.
-
-  private CurrentRobotState handleRobotStateTransitions() {
-    previousRobotState = currentRobotState;
-
-
-
-    switch (wantedRobotState) {
-      default:
-        stop(previousRobotState)
-        currentRobotState = CurrentRobotState.STOPPED;
-        break;
-      case HOME:
-        currentRobotState = CurrentRobotState.HOME;
-        break;
-      case DEFAULT_STATE:
-        currentRobotState = CurrentRobotState.STOPPED;
-        break;
-      case CLIMB:
-        currentRobotState = CurrentRobotState.CLIMB;
-        break;
-      case INTAKE_CORAL:
-        currentRobotState = CurrentRobotState.INTAKE_CORAL;
-        break;
-      case INTAKE_ALGAE_LOWER:
-        currentRobotState = CurrentRobotState.INTAKE_ALGAE_LOWER;
-        break;
-      case INTAKE_ALGAE_UPPER:
-        currentRobotState = CurrentRobotState.INTAKE_ALGAE_UPPER;
-        break;
-      case INTAKE_ALGAE_GROUND:
-        currentRobotState = CurrentRobotState.INTAKE_GROUND;
-        break;
-      case SCORE_ALGAE_PROCESSOR:
-        currentRobotState = CurrentRobotState.SCORE_ALGAE_PROCESSOR;
-        break;
-      case CORAL_SCORE_L1_LEFT:
-        currentRobotState = CurrentRobotState.CORAL_SCORE_L1_LEFT;
-        break;
-      case CORAL_SCORE_L2_LEFT:
-        currentRobotState = CurrentRobotState.CORAL_SCORE_L2_LEFT;
-        break;
-      case CORAL_SCORE_L3_LEFT:
-        currentRobotState = CurrentRobotState.CORAL_SCORE_L3_LEFT;
-        break;
-      case CORAL_SCORE_L4_LEFT:
-        currentRobotState = CurrentRobotState.CORAL_SCORE_L4_LEFT;
-        break;
-      case CORAL_SCORE_L1_RIGHT:
-        currentRobotState = CurrentRobotState.CORAL_SCORE_L1_RIGHT;
-        break;
-      case CORAL_SCORE_L2_RIGHT:
-        currentRobotState = CurrentRobotState.CORAL_SCORE_L2_RIGHT;
-        break;
-      case CORAL_SCORE_L3_RIGHT:
-        currentRobotState = CurrentRobotState.CORAL_SCORE_L3_RIGHT;
-        break;
-      case CORAL_SCORE_L4_RIGHT:
-        currentRobotState = CurrentRobotState.CORAL_SCORE_L4_RIGHT;
-        break;
-    }
-    return (currentRobotState);
-  }
-
-  private void applyStates() {
-    // Put the logic for conditional state maneuvers here (save current status in bools etc for
-    // conditional logic)
-
-    switch (currentRobotState) {
-      case HOME:
-
-        break;
-      case DEFAULT_STATE:
-
-        break;
-      case STOPPED:
-;
-        break;
-      case CLIMB:
-
-        break;
-      case INTAKE_CORAL:
-        Intake_Coral.execute();
-        break;
-      case INTAKE_ALGAE_LOWER:
-
-        break;
-      case INTAKE_ALGAE_UPPER:
-
-        break;
-      case INTAKE_GROUND:
-
-        break;
-      case SCORE_ALGAE_PROCESSOR:
-
-        break;
-      case CORAL_SCORE_L1_LEFT:
-
-        break;
-      case CORAL_SCORE_L2_LEFT:
-
-        break;
-      case CORAL_SCORE_L3_LEFT:
-
-        break;
-      case CORAL_SCORE_L4_LEFT:
-
-        break;
-      case CORAL_SCORE_L1_RIGHT:
-
-        break;
-      case CORAL_SCORE_L2_RIGHT:
-
-        break;
-      case CORAL_SCORE_L3_RIGHT:
-
-        break;
-      case CORAL_SCORE_L4_RIGHT:
-
-        break;
-    }
-  }
-
-
-  public void setWantedRobotState(WantedRobotState wantedRobotState) {
-    this.wantedRobotState = wantedRobotState;
     handleRobotStateTransitions();
   }
 
-  public WantedRobotState getWantedRobotState() {
-    return wantedRobotState;
+  private CurrentRobotState wantedToCurrentState(WantedRobotState state) {
+    switch (state) {
+      case DEFAULT_STATE:
+        return CurrentRobotState.DEFAULT_STATE;
+      case CLIMB:
+        return CurrentRobotState.CLIMB;
+      case INTAKE_CORAL:
+        return CurrentRobotState.INTAKE_CORAL;
+      case INTAKE_ALGAE_LOWER:
+        return CurrentRobotState.INTAKE_ALGAE_LOWER;
+      case INTAKE_ALGAE_UPPER:
+        return CurrentRobotState.INTAKE_ALGAE_UPPER;
+      case INTAKE_ALGAE_GROUND:
+        return CurrentRobotState.INTAKE_ALGAE_GROUND;
+      case SCORE_ALGAE_PROCESSOR:
+        return CurrentRobotState.SCORE_ALGAE_PROCESSOR;
+      case CORAL_SCORE_L1_LEFT:
+        return CurrentRobotState.CORAL_SCORE_L1_LEFT;
+      case CORAL_SCORE_L2_LEFT:
+        return CurrentRobotState.CORAL_SCORE_L2_LEFT;
+      case CORAL_SCORE_L3_LEFT:
+        return CurrentRobotState.CORAL_SCORE_L3_LEFT;
+      case CORAL_SCORE_L4_LEFT:
+        return CurrentRobotState.CORAL_SCORE_L4_LEFT;
+      case CORAL_SCORE_L1_RIGHT:
+        return CurrentRobotState.CORAL_SCORE_L1_RIGHT;
+      case CORAL_SCORE_L2_RIGHT:
+        return CurrentRobotState.CORAL_SCORE_L2_RIGHT;
+      case CORAL_SCORE_L3_RIGHT:
+        return CurrentRobotState.CORAL_SCORE_L3_RIGHT;
+      case CORAL_SCORE_L4_RIGHT:
+        return CurrentRobotState.CORAL_SCORE_L4_RIGHT;
+      default:
+        return CurrentRobotState.DEFAULT_STATE;
+    } 
   }
 
-  public CurrentRobotState getCurrentRobotState() {
-    return currentRobotState;
+  private void exitState(CurrentRobotState currentRobotState) {
+    switch (currentRobotState) {
+      case DEFAULT_STATE:
+        break;
+      case CLIMB:
+        break;
+      case INTAKE_CORAL:
+        hopperSubsystem.exit();
+        break;
+      case INTAKE_ALGAE_LOWER:
+        break;
+      case INTAKE_ALGAE_UPPER:
+        break;
+      case INTAKE_ALGAE_GROUND:
+        algaeWristSubsystem.setPosition(AlgaeWristConstants.MIN_POSITION); // ??
+        algaeIntakeSubsystem.setVoltage(AlgaeIntakeConstants.STOP_VOLTAGE);
+        break;
+      case SCORE_ALGAE_PROCESSOR:
+        break;
+      case CORAL_SCORE_L1_LEFT:
+        break;
+      case CORAL_SCORE_L2_LEFT:
+        break;
+      case CORAL_SCORE_L3_LEFT:
+        break;
+      case CORAL_SCORE_L4_LEFT:
+        break;
+      case CORAL_SCORE_L1_RIGHT:
+        break;
+      case CORAL_SCORE_L2_RIGHT:
+        break;
+      case CORAL_SCORE_L3_RIGHT:
+        break;
+      case CORAL_SCORE_L4_RIGHT:
+        break;
+      default:
+        break;
+    }
   }
 
-  public CurrentRobotState getPreviousRobotState() {
-    return previousRobotState;
+  private void enterState(CurrentRobotState currentRobotState) {
+    switch (currentRobotState) {
+      case DEFAULT_STATE:
+        break;
+      case CLIMB:
+        break;
+      case INTAKE_CORAL:
+        hopperSubsystem.enter();
+        break;
+      case INTAKE_ALGAE_LOWER:
+        break;
+      case INTAKE_ALGAE_UPPER:
+        break;
+      case INTAKE_ALGAE_GROUND:
+        algaeWristSubsystem.setPosition(AlgaeWristConstants.MIN_POSITION);
+        algaeIntakeSubsystem.setVoltage(AlgaeIntakeConstants.INTAKE_VOLTAGE);
+        break;
+      case SCORE_ALGAE_PROCESSOR:
+        break;
+      case CORAL_SCORE_L1_LEFT:
+        break;    
+      case CORAL_SCORE_L2_LEFT:
+        break;
+      case CORAL_SCORE_L3_LEFT:
+        break;
+      case CORAL_SCORE_L4_LEFT:
+        break;
+      case CORAL_SCORE_L1_RIGHT:
+        break;
+      case CORAL_SCORE_L2_RIGHT:
+        break;
+      case CORAL_SCORE_L3_RIGHT:
+        break;
+      case CORAL_SCORE_L4_RIGHT:
+        break;
+      default:
+        break;
+    }
   }
 
-  public Command setStateCommand(WantedRobotState superState) {
-    return setStateCommand(superState, false);
+  private void handleRobotStateTransitions() {
+    if (currentRobotState != wantedToCurrentState(wantedRobotState)) {
+      // Exit old state
+      exitState(currentRobotState);
+  
+      // Update
+      previousRobotState = currentRobotState;
+      currentRobotState = wantedToCurrentState(wantedRobotState);
+  
+      // Enter new state
+      enterState(currentRobotState);
+    }
   }
 
-  public Command setStateCommand(WantedRobotState superState, boolean runIfClimberDeployed) {
-    Command commandToReturn = new InstantCommand(() -> setWantedRobotState(superState));
-    // safeguard anti-move-while-climb logic here
-    return commandToReturn;
+  public Command setWantedState(WantedRobotState state) {
+    return runOnce(() -> wantedRobotState = state);
   }
 }

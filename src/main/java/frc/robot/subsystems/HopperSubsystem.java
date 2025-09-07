@@ -10,8 +10,10 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+
 
 public class HopperSubsystem extends SubsystemBase {
   private final TalonFX primaryMotor;
@@ -56,6 +58,15 @@ public class HopperSubsystem extends SubsystemBase {
    *
    * @param speed The desired motor output (range between -1 and 1).
    */
+
+  public void enter() {
+    setVoltage(Constants.HopperConstants.START_VOLTAGE);
+  }
+
+  public void exit() {
+    setVoltage(Constants.HopperConstants.STOP_VOLTAGE);
+  }
+  
   public void setVoltage(double voltage) {
     if (voltage != this.voltage) {
       this.voltage = voltage;
@@ -66,7 +77,7 @@ public class HopperSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-   // updateData.accept(Constants.MapConstants.HOPPER_VOLTAGE, voltage);
+    // updateData.accept(Constants.MapConstants.HOPPER_VOLTAGE, voltage);
     // Post the current state to network tables or smth
 
   }
