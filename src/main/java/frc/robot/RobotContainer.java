@@ -193,9 +193,8 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     controller // Coral intake input
-        .y()
-        .onTrue(stateMachine.setWantedState(StateMachine.RobotState.INTAKE_CORAL))
-        .onFalse(stateMachine.setWantedState(StateMachine.RobotState.DEFAULT_STATE));
+        .rightBumper()
+        .onTrue(stateMachine.setWantedState(StateMachine.RobotState.INTAKE_CORAL));
   }
 
   public HopperSubsystem getHopper() {

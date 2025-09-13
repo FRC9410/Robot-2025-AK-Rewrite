@@ -77,4 +77,12 @@ public class HopperSubsystem extends SubsystemBase {
     // Post the current state to network tables or smth
 
   }
+
+  public boolean isReady() {
+    if (voltage == Constants.HopperConstants.STOP_VOLTAGE) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }

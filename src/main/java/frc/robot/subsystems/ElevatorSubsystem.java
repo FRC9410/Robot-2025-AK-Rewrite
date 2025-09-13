@@ -120,4 +120,12 @@ public class ElevatorSubsystem extends SubsystemBase {
   public void zeroEncoder() {
     elevatorMotor.setPosition(0);
   }
+
+  public boolean isReady() {
+    if (isAtPosition(Constants.ElevatorConstants.HOME_POSITION) && setpoint==Constants.ElevatorConstants.HOME_POSITION) { // if its home and its not going to go anywhere
+      return true;
+    } else {
+      return false;
+    }
+  }
 }

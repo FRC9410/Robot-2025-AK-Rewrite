@@ -1,0 +1,159 @@
+superstructure {
+  currentState
+  wantedState
+  autodrive = true/false
+
+  periodic() {
+    handleStateTransitions()
+    updateNearestScoringPosition()
+  }
+
+  setWantedState(state) {
+    this.wantedState = state;
+  }
+
+  handleStateTransitions() {
+    if (this.currentState !== this.wantedState) {
+      this.currentState = readyState // transition/default state
+
+      if (isReadyState()) {
+        this.currentState = this.wantedState
+      }
+    }
+
+    switch(this.currentState) {
+      case scoringL1:
+        executeScoringL1()
+      break
+      case scoringL2:
+        executeScoringL2()
+      break
+      case scoringL3:
+        executeScoringL3()
+      break
+      case scoringL4:
+        executeScoringL4()
+      break
+      case climbing:
+        executeClimbing()
+      break
+    }
+  }
+
+  isReadyState() {
+    if () { // check subsystems for readiness
+      return true
+    }
+    return false
+  }
+
+  updateNearestScoringPosition() {
+    drivetrain.setNearestScoringPosition(localization.getClosestScoringPosition());
+  }
+
+  executeScoringL4() {
+    if (endEffector.hasGamePiece()) {
+      if (localization.isInScoringPosition()) {
+        if (!elevator.isAtPosition(elevatorPositions.level4)) {
+          elevator.moveToPosition(elevatorPositions.level4);
+        }
+        if {elevator.isAtPosition(elevatorPositions.level4)} {
+          endEffector.setOn();
+        }
+      } else {
+        if (!elevator.isAtPosition(elevatorPositions.home)) {
+          elevator.goToPosition(elevatorPositions.home);
+          endEffector.setOff();
+        }
+        if (autodrive) {
+          drivetrain.driveToPosition(localization.targetScoringPosition);
+        }
+      }
+
+    } else {
+      if (!elevator.isAtPosition(elevatorPositions.home)) {
+        elevator.goToPosition(elevatorPositions.home);
+        endEffector.setOff();
+      }
+
+      setWantedState(intaking);
+    }
+  }
+}
+
+localization {//same as vision subsystem
+  targetScoringPosition
+  distanceToTargetThreshold = 0.01 // example/magic number
+
+  periodic() {
+    updateTargetScoringPosition()
+  }
+
+  updateTargetScoringPosition() {
+    this.targetScoringPosition = getClosestScoringPosition();
+  }
+
+  isInScoringPosition() {
+    currentPosition = getCurrentPosition();
+    return currentPosition.distanceTo(this.targetScoringPosition) < this.distanceToTargetThreshold;
+  }
+
+  getClosestScoringPosition() {
+    // Implement logic to find the closest scoring position
+    return closestPosition;
+  }
+}
+
+
+Options for coral scoring selector:
+    1. Condense the states:
+        All coral states would be replaced with state SCORE_CORAL
+        The SCORE_CORAL state would call this, and depending on shuffleboard input, it would pick with executable to be called.
+        This is called periodically. 
+        Essentially an extra step between the current executables and the parent state machine switch block.
+
+        Could break it up for more abstraction.
+
+
+        coralPlacementHandler() {
+            switch (shuffleboard.side) {
+                CASE: LEFT {
+                    switch (shuffleboard.coralLevel) {
+                        CASE: CoralL1 {
+                            executeScoreCoralLeftL1();
+                            break;
+                        }
+                        CASE: CoralL2 {
+                            executeScoreCoralLeftL2();
+                            break;
+                        }
+                        ...
+                        default: {
+                            break;
+                        }
+                    }
+                }
+                CASE: RIGHT {
+                    switch (shuffleboard.coralLevel) {
+                        CASE: CoralL1 {
+                            executeScoreCoralRightL1();
+                            break;
+                        }
+                        CASE: CoralL2 {
+                            executeScoreCoralRightL2();
+                            break;
+                        }
+                        ...
+                        default: {
+                            break;
+                        }
+                    }
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+
+
+    2. 

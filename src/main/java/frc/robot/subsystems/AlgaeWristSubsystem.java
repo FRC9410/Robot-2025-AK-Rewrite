@@ -96,4 +96,5 @@ public class AlgaeWristSubsystem extends SubsystemBase {
   public Command moveWristToSetpointCommand(double setpoint) {
     return runOnce(() -> setPosition(setpoint));
   }
+
 }

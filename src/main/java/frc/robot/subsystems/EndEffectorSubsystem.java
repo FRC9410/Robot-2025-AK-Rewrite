@@ -55,4 +55,12 @@ public class EndEffectorSubsystem extends SubsystemBase {
     }
     // No need to command secondaryMotor here since it follows primaryMotor in reverse.
   }
+
+  public boolean isReady() {
+    if (voltage == Constants.EndEffectorConstants.STOP_VOLTAGE) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
