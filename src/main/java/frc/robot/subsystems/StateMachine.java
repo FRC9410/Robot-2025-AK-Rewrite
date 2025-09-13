@@ -4,27 +4,41 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.RobotContainer;
-import frc.robot.Constants.AlgaeIntakeConstants;
-import frc.robot.Constants.AlgaeWristConstants;
-import edu.wpi.first.wpilibj2.command.Command;
 import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 
+import java.net.http.HttpClient.Redirect;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.*;
+import frc.robot.Constants;
 
 public class StateMachine extends SubsystemBase {
   HopperSubsystem hopperSubsystem;
   AlgaeWristSubsystem algaeWristSubsystem;
   AlgaeIntakeSubsystem algaeIntakeSubsystem;
+  SensorsSubsystem sensorsSubsystem;
+  ElevatorSubsystem elevatorSubsystem;
+  EndEffectorSubsystem endEffectorSubsystem;
 
-  public StateMachine(HopperSubsystem hopper, AlgaeWristSubsystem algaeWrist, AlgaeIntakeSubsystem algaeIntake) {
+  public StateMachine(
+      HopperSubsystem hopper, AlgaeWristSubsystem algaeWrist, AlgaeIntakeSubsystem algaeIntake, SensorsSubsystem sensorsSubsystem, ElevatorSubsystem elevatorSubsystem, EndEffectorSubsystem endEffectorSubsystem) {
     this.hopperSubsystem = hopper;
     this.algaeWristSubsystem = algaeWrist;
     this.algaeIntakeSubsystem = algaeIntake;
+    this.sensorsSubsystem = sensorsSubsystem;
+    this.elevatorSubsystem = elevatorSubsystem;
+    this.endEffectorSubsystem = endEffectorSubsystem;
   }
 
-  public enum WantedRobotState {
+  RobotState INIT_STATE = RobotState.DEFAULT_STATE;
+  RobotState READY_STATE = RobotState.DEFAULT_STATE;
+
+  private boolean hopperMotorsRunning = false;
+  private boolean endEffectorMotorsRunning = false;
+
+
+  public enum RobotState {
     DEFAULT_STATE, // This is the default state when the robot is not doing anything
     CLIMB,
     INTAKE_CORAL,
@@ -42,166 +56,87 @@ public class StateMachine extends SubsystemBase {
     CORAL_SCORE_L4_RIGHT
   }
 
-  public enum CurrentRobotState {
-    DEFAULT_STATE, // This is the default state when the robot is not doing anything
-    CLIMB,
-    INTAKE_CORAL,
-    INTAKE_ALGAE_LOWER,
-    INTAKE_ALGAE_UPPER,
-    INTAKE_ALGAE_GROUND,
-    SCORE_ALGAE_PROCESSOR,
-    CORAL_SCORE_L1_LEFT,
-    CORAL_SCORE_L2_LEFT,
-    CORAL_SCORE_L3_LEFT,
-    CORAL_SCORE_L4_LEFT,
-    CORAL_SCORE_L1_RIGHT,
-    CORAL_SCORE_L2_RIGHT,
-    CORAL_SCORE_L3_RIGHT,
-    CORAL_SCORE_L4_RIGHT
-  }
-
-  private WantedRobotState wantedRobotState = WantedRobotState.DEFAULT_STATE;
-  private CurrentRobotState currentRobotState = CurrentRobotState.DEFAULT_STATE;
-  private CurrentRobotState previousRobotState;
-
+  private RobotState wantedRobotState = INIT_STATE;
+  private RobotState currentRobotState = INIT_STATE;
+  private RobotState previousRobotState;
 
   @Override
   public void periodic() {
     handleRobotStateTransitions();
   }
 
-  private CurrentRobotState wantedToCurrentState(WantedRobotState state) {
-    switch (state) {
-      case DEFAULT_STATE:
-        return CurrentRobotState.DEFAULT_STATE;
-      case CLIMB:
-        return CurrentRobotState.CLIMB;
-      case INTAKE_CORAL:
-        return CurrentRobotState.INTAKE_CORAL;
-      case INTAKE_ALGAE_LOWER:
-        return CurrentRobotState.INTAKE_ALGAE_LOWER;
-      case INTAKE_ALGAE_UPPER:
-        return CurrentRobotState.INTAKE_ALGAE_UPPER;
-      case INTAKE_ALGAE_GROUND:
-        return CurrentRobotState.INTAKE_ALGAE_GROUND;
-      case SCORE_ALGAE_PROCESSOR:
-        return CurrentRobotState.SCORE_ALGAE_PROCESSOR;
-      case CORAL_SCORE_L1_LEFT:
-        return CurrentRobotState.CORAL_SCORE_L1_LEFT;
-      case CORAL_SCORE_L2_LEFT:
-        return CurrentRobotState.CORAL_SCORE_L2_LEFT;
-      case CORAL_SCORE_L3_LEFT:
-        return CurrentRobotState.CORAL_SCORE_L3_LEFT;
-      case CORAL_SCORE_L4_LEFT:
-        return CurrentRobotState.CORAL_SCORE_L4_LEFT;
-      case CORAL_SCORE_L1_RIGHT:
-        return CurrentRobotState.CORAL_SCORE_L1_RIGHT;
-      case CORAL_SCORE_L2_RIGHT:
-        return CurrentRobotState.CORAL_SCORE_L2_RIGHT;
-      case CORAL_SCORE_L3_RIGHT:
-        return CurrentRobotState.CORAL_SCORE_L3_RIGHT;
-      case CORAL_SCORE_L4_RIGHT:
-        return CurrentRobotState.CORAL_SCORE_L4_RIGHT;
-      default:
-        return CurrentRobotState.DEFAULT_STATE;
-    } 
-  }
-
-  private void exitState(CurrentRobotState currentRobotState) {
-    switch (currentRobotState) {
-      case DEFAULT_STATE:
-        break;
-      case CLIMB:
-        break;
-      case INTAKE_CORAL:
-        hopperSubsystem.exit();
-        break;
-      case INTAKE_ALGAE_LOWER:
-        break;
-      case INTAKE_ALGAE_UPPER:
-        break;
-      case INTAKE_ALGAE_GROUND:
-        algaeWristSubsystem.setPosition(AlgaeWristConstants.MIN_POSITION); // ??
-        algaeIntakeSubsystem.setVoltage(AlgaeIntakeConstants.STOP_VOLTAGE);
-        break;
-      case SCORE_ALGAE_PROCESSOR:
-        break;
-      case CORAL_SCORE_L1_LEFT:
-        break;
-      case CORAL_SCORE_L2_LEFT:
-        break;
-      case CORAL_SCORE_L3_LEFT:
-        break;
-      case CORAL_SCORE_L4_LEFT:
-        break;
-      case CORAL_SCORE_L1_RIGHT:
-        break;
-      case CORAL_SCORE_L2_RIGHT:
-        break;
-      case CORAL_SCORE_L3_RIGHT:
-        break;
-      case CORAL_SCORE_L4_RIGHT:
-        break;
-      default:
-        break;
-    }
-  }
-
-  private void enterState(CurrentRobotState currentRobotState) {
-    switch (currentRobotState) {
-      case DEFAULT_STATE:
-        break;
-      case CLIMB:
-        break;
-      case INTAKE_CORAL:
-        hopperSubsystem.enter();
-        break;
-      case INTAKE_ALGAE_LOWER:
-        break;
-      case INTAKE_ALGAE_UPPER:
-        break;
-      case INTAKE_ALGAE_GROUND:
-        algaeWristSubsystem.setPosition(AlgaeWristConstants.MIN_POSITION);
-        algaeIntakeSubsystem.setVoltage(AlgaeIntakeConstants.INTAKE_VOLTAGE);
-        break;
-      case SCORE_ALGAE_PROCESSOR:
-        break;
-      case CORAL_SCORE_L1_LEFT:
-        break;    
-      case CORAL_SCORE_L2_LEFT:
-        break;
-      case CORAL_SCORE_L3_LEFT:
-        break;
-      case CORAL_SCORE_L4_LEFT:
-        break;
-      case CORAL_SCORE_L1_RIGHT:
-        break;
-      case CORAL_SCORE_L2_RIGHT:
-        break;
-      case CORAL_SCORE_L3_RIGHT:
-        break;
-      case CORAL_SCORE_L4_RIGHT:
-        break;
-      default:
-        break;
-    }
-  }
-
   private void handleRobotStateTransitions() {
-    if (currentRobotState != wantedToCurrentState(wantedRobotState)) {
-      // Exit old state
-      exitState(currentRobotState);
-  
-      // Update
-      previousRobotState = currentRobotState;
-      currentRobotState = wantedToCurrentState(wantedRobotState);
-  
-      // Enter new state
-      enterState(currentRobotState);
+    if (this.currentRobotState != this.wantedRobotState) {
+      this.currentRobotState = READY_STATE;
+
+      if (isReadyState()) {
+        this.currentRobotState = this.wantedRobotState;
+      }
+    }
+
+    switch (this.currentRobotState) {
+      case INTAKE_CORAL:
+        // executeIntakeCoral();
+        break;
+      case CORAL_SCORE_L1_LEFT:
+        executeScoreCoralL1Left();
+        break;
     }
   }
 
-  public Command setWantedState(WantedRobotState state) {
+  private boolean isReadyState() {
+    // if () { // check subsystems for readiness
+    //   return true
+    // }
+    // return false\
+    return true;
+  }
+
+  ////////////////////////////////////////////////////////////
+  /// 
+  /// State Execution Methods
+  ///
+  ////////////////////////////////////////////////////////////
+  
+  private void executeIntakeCoral() {
+    if (!sensorsSubsystem.hasPiece()) { // if no piece
+      if (!hopperMotorsRunning) { // turn on hopper
+        hopperSubsystem.startMotors();
+        hopperMotorsRunning = true;
+      }
+      if(sensorsSubsystem.isIntakeLaserBroken()) { // if intake beam broken
+        if (!endEffectorMotorsRunning) { // turn on end effector
+          endEffectorSubsystem.intakeCoral();
+          endEffectorMotorsRunning = true;
+        }
+      } else {                    // if intake beam is not broken
+        if (endEffectorMotorsRunning) { // stop end effector
+          endEffectorSubsystem.stopMotors();
+          endEffectorMotorsRunning = false;
+        }
+      }
+
+    } else { // there is a piece
+      if(hopperMotorsRunning) { // stop hopper motors
+       hopperSubsystem.stopMotors();
+      }
+      setWantedState(RobotState.DEFAULT_STATE);
+    }
+  } 
+
+  private void executeScoreCoralL1Left() {
+    if (sensorsSubsystem.hasPiece()) {
+      
+    } else {
+      if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.HOME_POSITION)) { // if no piece and elevator not home 
+        elevatorSubsystem.setPosition(Constants.ElevatorConstants.HOME_POSITION); // move elevator to home
+        endEffectorSubsystem.setVoltage(Constants.EndEffectorConstants.STOP_VOLTAGE); // turn off end effector
+      }
+      setWantedState(RobotState.INTAKE_CORAL);
+    }
+  }
+
+  public Command setWantedState(RobotState state) {
     return runOnce(() -> wantedRobotState = state);
   }
 }

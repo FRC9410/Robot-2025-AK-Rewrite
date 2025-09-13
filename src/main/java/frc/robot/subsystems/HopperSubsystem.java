@@ -9,17 +9,14 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-
 
 public class HopperSubsystem extends SubsystemBase {
   private final TalonFX primaryMotor;
   private final TalonFX secondaryMotor;
   private static final NeutralOut brake = new NeutralOut();
-  //private final BiConsumer<String, Object> updateData;
+  // private final BiConsumer<String, Object> updateData;
   private double voltage;
 
   /**
@@ -46,10 +43,17 @@ public class HopperSubsystem extends SubsystemBase {
     secondaryMotor.getConfigurator().apply(config);
     secondaryMotor.setControl(new Follower(primaryMotor.getDeviceID(), true));
 
-   //this.updateData = updateData;
+    // this.updateData = updateData;
     primaryMotor.setVoltage(Constants.HopperConstants.STOP_VOLTAGE);
   }
 
+
+  public void startMotors() {
+    setVoltage(Constants.HopperConstants.START_VOLTAGE);
+  }
+  public void stopMotors() {
+    setVoltage(Constants.HopperConstants.STOP_VOLTAGE);
+  }
   /**
    * Runs the hopper motors at the given speed.
    *
@@ -59,14 +63,6 @@ public class HopperSubsystem extends SubsystemBase {
    * @param speed The desired motor output (range between -1 and 1).
    */
 
-  public void enter() {
-    setVoltage(Constants.HopperConstants.START_VOLTAGE);
-  }
-
-  public void exit() {
-    setVoltage(Constants.HopperConstants.STOP_VOLTAGE);
-  }
-  
   public void setVoltage(double voltage) {
     if (voltage != this.voltage) {
       this.voltage = voltage;

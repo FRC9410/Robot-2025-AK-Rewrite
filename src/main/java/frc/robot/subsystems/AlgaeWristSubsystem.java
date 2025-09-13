@@ -4,7 +4,7 @@
 
 package frc.robot.subsystems;
 
-import java.util.function.BiConsumer;
+import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -16,12 +16,10 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-
-import static edu.wpi.first.units.Units.Rotations;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-
+import java.util.function.BiConsumer;
 
 public class AlgaeWristSubsystem extends SubsystemBase {
   private final TalonFX wristMotor;
@@ -33,67 +31,69 @@ public class AlgaeWristSubsystem extends SubsystemBase {
   /**
    * Constructor for the AlgaeWrist subsystem.
    *
-   * @param motorID   CAN ID for the wrist motor.
+   * @param motorID CAN ID for the wrist motor.
    * @param encoderID CAN ID for the absolute encoder.
    */
   public AlgaeWristSubsystem(BiConsumer<String, Object> updateData) {
-      wristMotor = new TalonFX(Constants.AlgaeWristConstants.CAN_ID, Constants.CanBusConstants.CANIVORE_BUS);
-      cancoder = new CANcoder(Constants.AlgaeWristConstants.ENCODER_CAN_ID, Constants.CanBusConstants.CANIVORE_BUS);
+    wristMotor =
+        new TalonFX(Constants.AlgaeWristConstants.CAN_ID, Constants.CanBusConstants.CANIVORE_BUS);
+    cancoder =
+        new CANcoder(
+            Constants.AlgaeWristConstants.ENCODER_CAN_ID, Constants.CanBusConstants.CANIVORE_BUS);
 
-      MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-      CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
-      TalonFXConfiguration config = new TalonFXConfiguration();
-      
-      encoderConfig.MagnetSensor.withAbsoluteSensorDiscontinuityPoint(Rotations.of(1));
-      encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
-      encoderConfig.MagnetSensor.withMagnetOffset(Rotations.of(-0.1));
+    MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+    CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
+    TalonFXConfiguration config = new TalonFXConfiguration();
 
-      cancoder.getConfigurator().apply(encoderConfig);
-      
-      // Configure PID
-      config.Slot0.kP = Constants.AlgaeWristConstants.kP;
-      config.Slot0.kI = Constants.AlgaeWristConstants.kI;
-      config.Slot0.kD = Constants.AlgaeWristConstants.kD;
-      config.Slot0.kG = Constants.AlgaeWristConstants.kG;
-      config.Feedback.FeedbackRemoteSensorID = cancoder.getDeviceID();
-      config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-      config.Feedback.SensorToMechanismRatio = 2.0;
-      config.Feedback.RotorToSensorRatio = 50.0;
+    encoderConfig.MagnetSensor.withAbsoluteSensorDiscontinuityPoint(Rotations.of(1));
+    encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
+    encoderConfig.MagnetSensor.withMagnetOffset(Rotations.of(-0.1));
 
+    cancoder.getConfigurator().apply(encoderConfig);
 
-      wristMotor.getConfigurator().apply(config);
+    // Configure PID
+    config.Slot0.kP = Constants.AlgaeWristConstants.kP;
+    config.Slot0.kI = Constants.AlgaeWristConstants.kI;
+    config.Slot0.kD = Constants.AlgaeWristConstants.kD;
+    config.Slot0.kG = Constants.AlgaeWristConstants.kG;
+    config.Feedback.FeedbackRemoteSensorID = cancoder.getDeviceID();
+    config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+    config.Feedback.SensorToMechanismRatio = 2.0;
+    config.Feedback.RotorToSensorRatio = 50.0;
 
-      motionMagicConfigs.withMotionMagicCruiseVelocity(Constants.AlgaeWristConstants.MOTION_MAGIC_VELOCITY)
+    wristMotor.getConfigurator().apply(config);
+
+    motionMagicConfigs
+        .withMotionMagicCruiseVelocity(Constants.AlgaeWristConstants.MOTION_MAGIC_VELOCITY)
         .withMotionMagicAcceleration(Constants.AlgaeWristConstants.MOTION_MAGIC_ACCELERATION);
 
-      wristMotor.getConfigurator().apply(motionMagicConfigs);
+    wristMotor.getConfigurator().apply(motionMagicConfigs);
 
-      /* Speed up signals to an appropriate rate */
-      BaseStatusSignal.setUpdateFrequencyForAll(100, cancoder.getPosition(), cancoder.getVelocity());
-      wristMotor.setNeutralMode(NeutralModeValue.Brake);
-        
-      this.updateData = updateData;
-      setpoint = 0.8;
-      wristMotor.setControl(motionMagicRequest.withPosition(0.07).withSlot(0));
+    /* Speed up signals to an appropriate rate */
+    BaseStatusSignal.setUpdateFrequencyForAll(100, cancoder.getPosition(), cancoder.getVelocity());
+    wristMotor.setNeutralMode(NeutralModeValue.Brake);
+
+    this.updateData = updateData;
+    setpoint = 0.8;
+    wristMotor.setControl(motionMagicRequest.withPosition(0.07).withSlot(0));
   }
-  
+
   @Override
-  public void periodic() {
-  }
+  public void periodic() {}
 
   /**
-   * Commands the wrist to move to a specific target angle (in degrees).
-   * The target angle is clamped between WRIST_MIN_ANGLE_DEGREES and WRIST_MAX_ANGLE_DEGREES.
-   * The method converts the desired angle into motor rotations (using the gear ratio) and
-   * then sets the internal motor controller's position setpoint.
+   * Commands the wrist to move to a specific target angle (in degrees). The target angle is clamped
+   * between WRIST_MIN_ANGLE_DEGREES and WRIST_MAX_ANGLE_DEGREES. The method converts the desired
+   * angle into motor rotations (using the gear ratio) and then sets the internal motor controller's
+   * position setpoint.
    *
    * @param targetAngleDegrees The desired target angle in degrees.
    */
   public void setPosition(double position) {
-      wristMotor.setControl(motionMagicRequest.withPosition(position).withSlot(0));
+    wristMotor.setControl(motionMagicRequest.withPosition(position).withSlot(0));
   }
 
   public Command moveWristToSetpointCommand(double setpoint) {
     return runOnce(() -> setPosition(setpoint));
   }
-} 
+}

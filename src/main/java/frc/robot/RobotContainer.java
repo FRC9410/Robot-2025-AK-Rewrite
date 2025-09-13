@@ -13,10 +13,10 @@
 
 package frc.robot;
 
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
+import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -25,12 +25,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants.AlgaeIntakeConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeIntakeSubsystem;
 import frc.robot.subsystems.AlgaeWristSubsystem;
+import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.EndEffectorSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
+import frc.robot.subsystems.SensorsSubsystem;
 import frc.robot.subsystems.StateMachine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -39,13 +41,9 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.vision.Vision;
-import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
-import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
-
-import javax.lang.model.type.NullType;
-
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -62,10 +60,12 @@ public class RobotContainer {
   private final HopperSubsystem hopperSubsystem;
   private final AlgaeWristSubsystem algaeWristSubsystem;
   private final AlgaeIntakeSubsystem algaeIntakeSubsystem;
+  private final SensorsSubsystem sensorsSubsystem;
+  private final ElevatorSubsystem elevatorSubsystem;
+  private final EndEffectorSubsystem endEffectorSubsystem;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
-
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -75,7 +75,10 @@ public class RobotContainer {
     hopperSubsystem = new HopperSubsystem();
     algaeWristSubsystem = new AlgaeWristSubsystem(null);
     algaeIntakeSubsystem = new AlgaeIntakeSubsystem(null);
-    stateMachine = new StateMachine(hopperSubsystem, algaeWristSubsystem, algaeIntakeSubsystem);
+    sensorsSubsystem = new SensorsSubsystem(null);
+    elevatorSubsystem = new ElevatorSubsystem(null);
+    endEffectorSubsystem = new EndEffectorSubsystem(null);
+    stateMachine = new StateMachine(hopperSubsystem, algaeWristSubsystem, algaeIntakeSubsystem, sensorsSubsystem, elevatorSubsystem, endEffectorSubsystem);
 
     switch (Constants.currentMode) {
       case REAL:
@@ -191,14 +194,14 @@ public class RobotContainer {
 
     controller // Coral intake input
         .y()
-        .onTrue(stateMachine.setWantedState(StateMachine.WantedRobotState.INTAKE_CORAL))
-        .onFalse(stateMachine.setWantedState(StateMachine.WantedRobotState.DEFAULT_STATE));
+        .onTrue(stateMachine.setWantedState(StateMachine.RobotState.INTAKE_CORAL))
+        .onFalse(stateMachine.setWantedState(StateMachine.RobotState.DEFAULT_STATE));
   }
-  
+
   public HopperSubsystem getHopper() {
     return hopperSubsystem;
   }
-  
+
   public Drive getDrive() {
     return drive;
   }
@@ -206,8 +209,6 @@ public class RobotContainer {
   public RobotContainer getRobotContainer() {
     return robotContainer;
   }
-
-
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
