@@ -17,6 +17,7 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
   private double voltage;
   private boolean hasGamePiece = false;
   private static final VelocityVoltage voltageVelocity = new VelocityVoltage(-100);
+  private boolean isRunning = false;
 
   /**
    * Constructor for the Algae Intake subsystem.
@@ -72,15 +73,18 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
 
   public void intakeAlgae() {
     this.intakeMotor.setControl(voltageVelocity.withVelocity(50).withFeedForward(10));
+    isRunning = true;
   }
 
   public void outtakeAlgae() {
     this.intakeMotor.setControl(voltageVelocity.withVelocity(-50).withFeedForward(-8));
     setHasGamePiece(false);
+    isRunning = true;
   }
 
   public void stopIntake() {
     this.intakeMotor.setControl(brake);
+    isRunning = false;
   }
 
   public double getVelocity() {
@@ -93,6 +97,10 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
 
   public boolean getHasGamePiece() {
     return hasGamePiece;
+  }
+
+  public boolean isRunning() {
+    return isRunning;
   }
 
   /**
