@@ -105,6 +105,11 @@ localization {//same as vision subsystem
 }
 
 
+
+
+
+
+AIDAN: 
 Options for coral scoring selector:
     1. Condense the states:
         All coral states would be replaced with state SCORE_CORAL

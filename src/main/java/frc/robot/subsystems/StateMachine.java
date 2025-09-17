@@ -42,16 +42,21 @@ public class StateMachine extends SubsystemBase {
   private boolean hopperMotorsRunning = false;
   private boolean endEffectorMotorsRunning = false;
   private boolean hasAlgae = false;
+  private boolean shouldHoldAlgae = false; 
+  private boolean shouldReturnToReadyStateFromHoldingAlgae = false;
 
 
   public enum RobotState {
     READY_STATE, // This is the default state when the robot is not doing anything
+    ALGAE_READY_STATE,
     CLIMB,
     INTAKE_CORAL,
     INTAKE_ALGAE_LOWER,
     INTAKE_ALGAE_UPPER,
     INTAKE_ALGAE_GROUND,
+    HOLD_ALGAE,
     SCORE_ALGAE_PROCESSOR,
+    SCORE_ALGAE_BARGE,
     CORAL_SCORE_L1_LEFT,
     CORAL_SCORE_L2_LEFT,
     CORAL_SCORE_L3_LEFT,
@@ -71,18 +76,30 @@ public class StateMachine extends SubsystemBase {
     handleRobotStateTransitions();
   }
 
+  
+
   private void handleRobotStateTransitions() {
     if (this.currentRobotState != this.wantedRobotState) {
-      this.currentRobotState = READY_STATE;
-
-      if (isReadyState()) {
-        this.currentRobotState = this.wantedRobotState;
+      
+      if(this.wantedRobotState == RobotState.HOLD_ALGAE || this.currentRobotState == RobotState.SCORE_ALGAE_PROCESSOR || this.currentRobotState == RobotState.SCORE_ALGAE_BARGE) { //I know this is messy
+        this.currentRobotState = RobotState.ALGAE_READY_STATE;
+        if (hopperSubsystem.isReady() && endEffectorSubsystem.isReady() && elevatorSubsystem.isReady()) {
+          this.currentRobotState = this.wantedRobotState;
+        }
+      } else {
+        this.currentRobotState = READY_STATE;
+        if (isReadyState()) {
+          this.currentRobotState = this.wantedRobotState;
+        }
       }
     }
 
     switch (this.currentRobotState) {
       case READY_STATE:
         executeReadyState();
+        break;
+      case ALGAE_READY_STATE:
+        executeAlgaeReady();
         break;
       case CLIMB:
         // Climb logic here
@@ -99,8 +116,13 @@ public class StateMachine extends SubsystemBase {
       case INTAKE_ALGAE_GROUND:
         // Intake algae ground logic here
         break;
+      case HOLD_ALGAE:
+        // Hold algae logic here
+        break;
       case SCORE_ALGAE_PROCESSOR:
         // Score algae processor logic here
+        break;
+      case SCORE_ALGAE_BARGE: 
         break;
       case CORAL_SCORE_L1_LEFT:
         executeScoreCoralL1Left();
@@ -130,7 +152,11 @@ public class StateMachine extends SubsystemBase {
   }
 
   private boolean isReadyState() {
-    if (elevatorSubsystem.isReady() && hopperSubsystem.isReady() && endEffectorSubsystem.isReady()) { // check subsystems for readiness
+    if (elevatorSubsystem.isReady()
+     && hopperSubsystem.isReady() 
+     && endEffectorSubsystem.isReady() 
+     && algaeWristSubsystem.isAtHomePosition()
+     && algaeIntakeSubsystem.isReady())  { // check subsystems for readiness
       return true;
     }
     return false;
@@ -145,6 +171,20 @@ public class StateMachine extends SubsystemBase {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
 
+  private void executeAlgaeReady() {
+    if (hopperMotorsRunning) { // stop hopper motors
+      hopperSubsystem.stopMotors();
+      hopperMotorsRunning = false;
+    }
+    if (endEffectorMotorsRunning) { // stop end effector motors
+      endEffectorSubsystem.stopMotors();
+      endEffectorMotorsRunning = false;
+    }
+    if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.HOME_POSITION)) { // move elevator to home if not already there
+      elevatorSubsystem.setPosition(Constants.ElevatorConstants.HOME_POSITION);
+    } 
+  }
+  
 
   private void executeReadyState() {
     if (hopperMotorsRunning) { // stop hopper motors
@@ -157,6 +197,8 @@ public class StateMachine extends SubsystemBase {
     }
     if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.HOME_POSITION)) { // move elevator to home if not already there
       elevatorSubsystem.setPosition(Constants.ElevatorConstants.HOME_POSITION);
+      shouldHoldAlgae = false;
+      shouldReturnToReadyStateFromHoldingAlgae = false;
     }
     if (!algaeWristSubsystem.isAtHomePosition()) { // move algae wrist to home if not already there
       algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE);
@@ -193,20 +235,32 @@ public class StateMachine extends SubsystemBase {
     }
   } 
 
+  private void executeHoldAlgae() {
+    if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.HOME_POSITION)) {
+      elevatorSubsystem.setPosition(Constants.ElevatorConstants.HOME_POSITION); // move elevator to height if its not already there
+      shouldHoldAlgae = false;
+      shouldReturnToReadyStateFromHoldingAlgae = true;
+    } else {
+      if (!algaeWristSubsystem.isAtDownPosition()) {
+        algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE); // move wrist down
+      }
+      if (!algaeIntakeSubsystem.isRunning()) {
+        algaeIntakeSubsystem.stallIntake(); // start algae intake
+      }
+    }
+  }
 
   private void executeIntakeAlgaeLower() { 
-  // DOESNT WORK. WILL GO UP AND DOWN RAPIDLY. POTENTIALLY MAKE 'HOLD_ALGAE' STATE, AND WHEN SWITCHING FROM 
-  // INTAKING ALGAE TO HOLDING ALGAE, IT WILL SKIP SETTING READY STATE.
     if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION)) {
       elevatorSubsystem.setPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION); // move elevator to height if its not already there
-      algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE); // move wrist up
-
-    } else { // if elevators already up ( assume has intaked algae )
-      if (elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.HOME_POSITION)) {
-        elevatorSubsystem.setPosition(Constants.ElevatorConstants.HOME_POSITION); // move elevator to home
-      }
-      if (!algaeWristSubsystem.isAtHomePosition()) {
-      algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE); // move wrist dow
+      shouldHoldAlgae = true;
+    } else {
+      if (!algaeWristSubsystem.isAtDownPosition()) {
+        algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE); // move wrist down
+      } else {
+        if (!algaeIntakeSubsystem.isRunning()) {
+          algaeIntakeSubsystem.intakeAlgae(); // start algae intake
+        }
       }
     }
   }
@@ -217,8 +271,7 @@ public class StateMachine extends SubsystemBase {
       // need to implement position logic here
         if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L1_SCORE_POSITION)) { // move elevator to height if its not already there
           elevatorSubsystem.setPosition(Constants.ElevatorConstants.L1_SCORE_POSITION); 
-        }
-        if (elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L1_SCORE_POSITION)) {  // if elevator is at height, outtake coral
+        } else {  // if elevator is at height, outtake coral
           endEffectorSubsystem.outtakeCoral();
         }
     } else { // No piece, intake coral instead. 
@@ -232,5 +285,13 @@ public class StateMachine extends SubsystemBase {
 
   public Command setWantedState(RobotState state) {
     return runOnce(() -> wantedRobotState = state);
+  }
+
+  public boolean getAlgaeShouldGoDown() {
+    return shouldHoldAlgae;
+  }
+
+  public boolean getShouldReturnToReadyStateFromHoldingAlgae() {
+    return shouldReturnToReadyStateFromHoldingAlgae;
   }
 }

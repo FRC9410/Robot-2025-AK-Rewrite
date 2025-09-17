@@ -69,6 +69,7 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
   public void stallIntake() {
     // this.intakeMotor.setControl(voltageVelocity.withVelocity(25).withFeedForward(-9));
     intakeMotor.setControl(new DutyCycleOut(0.2));
+    isRunning = true;
   }
 
   public void intakeAlgae() {
@@ -101,6 +102,14 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
 
   public boolean isRunning() {
     return isRunning;
+  }
+
+  public boolean isReady() {
+    if (voltage == Constants.AlgaeIntakeConstants.STOP_VOLTAGE) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /**

@@ -16,6 +16,8 @@ package frc.robot;
 import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
 import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
 
+import java.lang.Thread.State;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -195,6 +197,54 @@ public class RobotContainer {
     controller // Coral intake input
         .rightBumper()
         .onTrue(stateMachine.setWantedState(StateMachine.RobotState.INTAKE_CORAL));
+    
+    controller
+        .x()
+        .onTrue(
+        Commands.runOnce(() -> {
+            if (stateMachine.getAlgaeShouldGoDown()) {
+              stateMachine.setWantedState(StateMachine.RobotState.HOLD_ALGAE);
+            } else {
+              stateMachine.setWantedState(StateMachine.RobotState.INTAKE_ALGAE_LOWER);
+            }
+        })
+    );
+
+    controller
+        .y()
+        .onTrue(
+          Commands.runOnce(() -> {
+            if (stateMachine.getAlgaeShouldGoDown()) {
+              stateMachine.setWantedState(StateMachine.RobotState.HOLD_ALGAE);
+            } else {
+              stateMachine.setWantedState(StateMachine.RobotState.INTAKE_ALGAE_UPPER);
+            }
+        })
+    );
+
+    controller 
+        .a()
+        .onTrue(
+          Commands.runOnce(() -> {
+            if (stateMachine.getAlgaeShouldGoDown()) {
+              stateMachine.setWantedState(StateMachine.RobotState.HOLD_ALGAE);
+            } else {
+              stateMachine.setWantedState(StateMachine.RobotState.INTAKE_ALGAE_GROUND);
+            }
+        })
+    );
+
+    controller
+        .b()
+        .onTrue(
+          Commands.runOnce(() -> {
+            if (stateMachine.getShouldReturnToReadyStateFromHoldingAlgae()) {
+              stateMachine.setWantedState(StateMachine.RobotState.READY_STATE);
+            } else {
+              stateMachine.setWantedState(StateMachine.RobotState.SCORE_ALGAE_BARGE);
+            }
+        })
+    );
   }
 
   public HopperSubsystem getHopper() {

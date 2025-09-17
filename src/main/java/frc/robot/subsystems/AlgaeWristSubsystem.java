@@ -90,6 +90,9 @@ public class AlgaeWristSubsystem extends SubsystemBase {
    *
    * @param targetAngleDegrees The desired target angle in degrees.
    */
+
+  
+
   public void setPosition(double position) {
     setpoint = position;
     wristMotor.setControl(motionMagicRequest.withPosition(setpoint).withSlot(0));
@@ -100,6 +103,14 @@ public class AlgaeWristSubsystem extends SubsystemBase {
   }
 
   public boolean isAtHomePosition() {
+    if (getPosition() == Constants.AlgaeWristConstants.WRIST_UP_VOLTAGE) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean isAtDownPosition() {
     if (getPosition() == Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE) {
       return true;
     } else {
