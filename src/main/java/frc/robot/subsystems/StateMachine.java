@@ -20,6 +20,7 @@ public class StateMachine extends SubsystemBase {
   SensorsSubsystem sensorsSubsystem;
   ElevatorSubsystem elevatorSubsystem;
   EndEffectorSubsystem endEffectorSubsystem;
+  Dashboard dashboard = new Dashboard;
 
   public StateMachine(
       HopperSubsystem hopper, 
@@ -57,6 +58,7 @@ public class StateMachine extends SubsystemBase {
     HOLD_ALGAE,
     SCORE_ALGAE_PROCESSOR,
     SCORE_ALGAE_BARGE,
+    SCORE_CORAL_STATE,
     CORAL_SCORE_L1_LEFT,
     CORAL_SCORE_L2_LEFT,
     CORAL_SCORE_L3_LEFT,
@@ -66,6 +68,19 @@ public class StateMachine extends SubsystemBase {
     CORAL_SCORE_L3_RIGHT,
     CORAL_SCORE_L4_RIGHT,
   }
+
+  /*
+   * Algae gone 2
+   * algae gone 3
+   * score 1
+   * score 2
+   * score 3
+   * score 4
+   * climb
+   * intake coral
+   * 
+   * 
+   */
 
   private RobotState wantedRobotState = INIT_STATE;
   private RobotState currentRobotState = INIT_STATE;
@@ -123,7 +138,10 @@ public class StateMachine extends SubsystemBase {
         // Score algae processor logic here
         break;
       case SCORE_ALGAE_BARGE: 
+
         break;
+      case SCORE_CORAL_STATE:
+      break;
       case CORAL_SCORE_L1_LEFT:
         executeScoreCoralL1Left();
         break;
@@ -266,7 +284,26 @@ public class StateMachine extends SubsystemBase {
   }
 
 
-  private void executeScoreCoralL1Left() {
+  private void executeScoreCoralState() {
+    switch (Dashboard.getSelectedCoralPosition()) {
+        CASE LEFT_L1:
+            executeScoreCoral(Constants.ElevatorConstants.L1_SCORE_POSITION);
+            break;
+        CASE LEFT_L2:
+            executeScoreCoral(Constants.ElevatorConstants.L2_SCORE_POSITION);
+            break;
+        CASE LEFT_L3:
+            executeScoreCoral(Constants.ElevatorConstants.L3_SCORE_POSITION);
+            break;
+        CASE LEFT_L4:
+            executeScoreCoral(Constants.ElevatorConstants.L4_SCORE_POSITION);
+            break;
+        
+    }
+  }
+
+
+  private void executeScoreCoral(double score_position, boolean isLeftSide) {
     if (sensorsSubsystem.hasPiece()) {
       // need to implement position logic here
         if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L1_SCORE_POSITION)) { // move elevator to height if its not already there
