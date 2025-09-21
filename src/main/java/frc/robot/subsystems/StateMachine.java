@@ -6,11 +6,8 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 
-import java.net.http.HttpClient.Redirect;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.*;
 import frc.robot.Constants;
 
 public class StateMachine extends SubsystemBase {
@@ -20,21 +17,24 @@ public class StateMachine extends SubsystemBase {
   SensorsSubsystem sensorsSubsystem;
   ElevatorSubsystem elevatorSubsystem;
   EndEffectorSubsystem endEffectorSubsystem;
-  Dashboard dashboard = new Dashboard;
+  ClimberSubsystem climberSubsystem;
+  // Dashboard dashboard;
 
   public StateMachine(
-      HopperSubsystem hopper, 
-      AlgaeWristSubsystem algaeWrist, 
-      AlgaeIntakeSubsystem algaeIntake, 
-      SensorsSubsystem sensorsSubsystem, 
-      ElevatorSubsystem elevatorSubsystem, 
-      EndEffectorSubsystem endEffectorSubsystem) {
+      HopperSubsystem hopper,
+      AlgaeWristSubsystem algaeWrist,
+      AlgaeIntakeSubsystem algaeIntake,
+      SensorsSubsystem sensorsSubsystem,
+      ElevatorSubsystem elevatorSubsystem,
+      EndEffectorSubsystem endEffectorSubsystem,
+      ClimberSubsystem climberSubsystem) {
     this.hopperSubsystem = hopper;
     this.algaeWristSubsystem = algaeWrist;
     this.algaeIntakeSubsystem = algaeIntake;
     this.sensorsSubsystem = sensorsSubsystem;
     this.elevatorSubsystem = elevatorSubsystem;
     this.endEffectorSubsystem = endEffectorSubsystem;
+    this.climberSubsystem = climberSubsystem;
   }
 
   RobotState INIT_STATE = RobotState.READY_STATE;
@@ -43,30 +43,28 @@ public class StateMachine extends SubsystemBase {
   private boolean hopperMotorsRunning = false;
   private boolean endEffectorMotorsRunning = false;
   private boolean hasAlgae = false;
-  private boolean shouldHoldAlgae = false; 
+  private boolean shouldHoldAlgae = false;
   private boolean shouldReturnToReadyStateFromHoldingAlgae = false;
 
+  public enum CoralPositions {
+    NO_POSITION,
+    LEFT_L1,
+    LEFT_L2,
+    LEFT_L3,
+    LEFT_L4,
+    RIGHT_L1,
+    RIGHT_L2,
+    RIGHT_L3,
+    RIGHT_L4
+  }
 
   public enum RobotState {
     READY_STATE, // This is the default state when the robot is not doing anything
-    ALGAE_READY_STATE,
     CLIMB,
     INTAKE_CORAL,
-    INTAKE_ALGAE_LOWER,
-    INTAKE_ALGAE_UPPER,
-    INTAKE_ALGAE_GROUND,
-    HOLD_ALGAE,
-    SCORE_ALGAE_PROCESSOR,
-    SCORE_ALGAE_BARGE,
-    SCORE_CORAL_STATE,
-    CORAL_SCORE_L1_LEFT,
-    CORAL_SCORE_L2_LEFT,
-    CORAL_SCORE_L3_LEFT,
-    CORAL_SCORE_L4_LEFT,
-    CORAL_SCORE_L1_RIGHT,
-    CORAL_SCORE_L2_RIGHT,
-    CORAL_SCORE_L3_RIGHT,
-    CORAL_SCORE_L4_RIGHT,
+    DESCORE_ALGAE_LOWER,
+    DESCORE_ALGAE_UPPER,
+    SCORAL // score + coral = scoral. -aiden
   }
 
   /*
@@ -78,9 +76,11 @@ public class StateMachine extends SubsystemBase {
    * score 4
    * climb
    * intake coral
-   * 
-   * 
+   *
+   *
    */
+
+  private CoralPositions selectedCoralPosition = CoralPositions.NO_POSITION;
 
   private RobotState wantedRobotState = INIT_STATE;
   private RobotState currentRobotState = INIT_STATE;
@@ -91,21 +91,11 @@ public class StateMachine extends SubsystemBase {
     handleRobotStateTransitions();
   }
 
-  
-
   private void handleRobotStateTransitions() {
     if (this.currentRobotState != this.wantedRobotState) {
-      
-      if(this.wantedRobotState == RobotState.HOLD_ALGAE || this.currentRobotState == RobotState.SCORE_ALGAE_PROCESSOR || this.currentRobotState == RobotState.SCORE_ALGAE_BARGE) { //I know this is messy
-        this.currentRobotState = RobotState.ALGAE_READY_STATE;
-        if (hopperSubsystem.isReady() && endEffectorSubsystem.isReady() && elevatorSubsystem.isReady()) {
-          this.currentRobotState = this.wantedRobotState;
-        }
-      } else {
-        this.currentRobotState = READY_STATE;
-        if (isReadyState()) {
-          this.currentRobotState = this.wantedRobotState;
-        }
+      this.currentRobotState = READY_STATE;
+      if (isReadyState()) {
+        this.currentRobotState = this.wantedRobotState;
       }
     }
 
@@ -113,96 +103,35 @@ public class StateMachine extends SubsystemBase {
       case READY_STATE:
         executeReadyState();
         break;
-      case ALGAE_READY_STATE:
-        executeAlgaeReady();
-        break;
       case CLIMB:
-        // Climb logic here
+        executeClimbState();
         break;
       case INTAKE_CORAL:
         executeIntakeCoral();
         break;
-      case INTAKE_ALGAE_LOWER:
-        // Intake algae lower logic here
-        break;
-      case INTAKE_ALGAE_UPPER:
-        // Intake algae upper logic here
-        break;
-      case INTAKE_ALGAE_GROUND:
-        // Intake algae ground logic here
-        break;
-      case HOLD_ALGAE:
-        // Hold algae logic here
-        break;
-      case SCORE_ALGAE_PROCESSOR:
-        // Score algae processor logic here
-        break;
-      case SCORE_ALGAE_BARGE: 
-
-        break;
-      case SCORE_CORAL_STATE:
-      break;
-      case CORAL_SCORE_L1_LEFT:
-        executeScoreCoralL1Left();
-        break;
-      case CORAL_SCORE_L2_LEFT:
-        // Score coral L2 left logic here
-        break;
-      case CORAL_SCORE_L3_LEFT:
-        // Score coral L3 left logic here
-        break;
-      case CORAL_SCORE_L4_LEFT:
-        // Score coral L4 left logic here
-        break;
-      case CORAL_SCORE_L1_RIGHT:
-        // Score coral L1 right logic here
-        break;
-      case CORAL_SCORE_L2_RIGHT:
-        // Score coral L2 right logic here
-        break;
-      case CORAL_SCORE_L3_RIGHT:
-        // Score coral L3 right logic here
-        break;
-      case CORAL_SCORE_L4_RIGHT:
-        // Score coral L4 right logic here
+      case SCORAL:
+        executeScoreCoral(selectedCoralPosition);
         break;
     }
   }
 
   private boolean isReadyState() {
     if (elevatorSubsystem.isReady()
-     && hopperSubsystem.isReady() 
-     && endEffectorSubsystem.isReady() 
-     && algaeWristSubsystem.isAtHomePosition()
-     && algaeIntakeSubsystem.isReady())  { // check subsystems for readiness
+        && hopperSubsystem.isReady()
+        && endEffectorSubsystem.isReady()
+        && algaeWristSubsystem.isAtHomePosition()
+        && algaeIntakeSubsystem.isReady()
+        && climberSubsystem.isReady()) { // check subsystems for readiness
       return true;
     }
     return false;
   }
 
-
-
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /// 
+  ///
   /// State Execution Methods
   ///
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
-
-  private void executeAlgaeReady() {
-    if (hopperMotorsRunning) { // stop hopper motors
-      hopperSubsystem.stopMotors();
-      hopperMotorsRunning = false;
-    }
-    if (endEffectorMotorsRunning) { // stop end effector motors
-      endEffectorSubsystem.stopMotors();
-      endEffectorMotorsRunning = false;
-    }
-    if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.HOME_POSITION)) { // move elevator to home if not already there
-      elevatorSubsystem.setPosition(Constants.ElevatorConstants.HOME_POSITION);
-    } 
-  }
-  
 
   private void executeReadyState() {
     if (hopperMotorsRunning) { // stop hopper motors
@@ -213,7 +142,8 @@ public class StateMachine extends SubsystemBase {
       endEffectorSubsystem.stopMotors();
       endEffectorMotorsRunning = false;
     }
-    if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.HOME_POSITION)) { // move elevator to home if not already there
+    if (!elevatorSubsystem.isAtPosition(
+        Constants.ElevatorConstants.HOME_POSITION)) { // move elevator to home if not already there
       elevatorSubsystem.setPosition(Constants.ElevatorConstants.HOME_POSITION);
       shouldHoldAlgae = false;
       shouldReturnToReadyStateFromHoldingAlgae = false;
@@ -224,8 +154,12 @@ public class StateMachine extends SubsystemBase {
     if (algaeIntakeSubsystem.isRunning()) { // stop algae intake if running
       algaeIntakeSubsystem.stopIntake();
     }
+    if (!climberSubsystem.isReady()) { // stop climber if running
+      climberSubsystem.stop();
+    }
   }
 
+  private void executeClimbState() {}
 
   private void executeIntakeCoral() {
     if (!sensorsSubsystem.hasPiece()) { // if no piece
@@ -233,12 +167,12 @@ public class StateMachine extends SubsystemBase {
         hopperSubsystem.startMotors();
         hopperMotorsRunning = true;
       }
-      if(sensorsSubsystem.isIntakeLaserBroken()) { // if intake beam broken
+      if (sensorsSubsystem.isIntakeLaserBroken()) { // if intake beam broken
         if (!endEffectorMotorsRunning) { // turn on end effector
           endEffectorSubsystem.intakeCoral();
           endEffectorMotorsRunning = true;
         }
-      } else {                    // if intake beam is not broken
+      } else { // if intake beam is not broken
         if (endEffectorMotorsRunning) { // stop end effector
           endEffectorSubsystem.stopMotors();
           endEffectorMotorsRunning = false;
@@ -246,75 +180,61 @@ public class StateMachine extends SubsystemBase {
       }
 
     } else { // there is a piece
-      if(hopperMotorsRunning) { // stop hopper motors
-       hopperSubsystem.stopMotors();
+      if (hopperMotorsRunning) { // stop hopper motors
+        hopperSubsystem.stopMotors();
       }
       setWantedState(RobotState.READY_STATE); // failsafe, should never occur.
     }
-  } 
-
-  private void executeHoldAlgae() {
-    if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.HOME_POSITION)) {
-      elevatorSubsystem.setPosition(Constants.ElevatorConstants.HOME_POSITION); // move elevator to height if its not already there
-      shouldHoldAlgae = false;
-      shouldReturnToReadyStateFromHoldingAlgae = true;
-    } else {
-      if (!algaeWristSubsystem.isAtDownPosition()) {
-        algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE); // move wrist down
-      }
-      if (!algaeIntakeSubsystem.isRunning()) {
-        algaeIntakeSubsystem.stallIntake(); // start algae intake
-      }
-    }
   }
 
-  private void executeIntakeAlgaeLower() { 
-    if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION)) {
-      elevatorSubsystem.setPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION); // move elevator to height if its not already there
-      shouldHoldAlgae = true;
-    } else {
-      if (!algaeWristSubsystem.isAtDownPosition()) {
-        algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE); // move wrist down
-      } else {
-        if (!algaeIntakeSubsystem.isRunning()) {
-          algaeIntakeSubsystem.intakeAlgae(); // start algae intake
-        }
-      }
+  private void executeScoreCoral(CoralPositions coralPosition) {
+    double elevatorPosition;
+    double xOffset; // I'm not sure if this is right but just to get the idea
+    switch (coralPosition) {
+      case LEFT_L1:
+        elevatorPosition = Constants.ElevatorConstants.L1_SCORE_POSITION;
+        break;
+      case LEFT_L2:
+        elevatorPosition = Constants.ElevatorConstants.L2_SCORE_POSITION;
+        break;
+      case LEFT_L3:
+        elevatorPosition = Constants.ElevatorConstants.L3_SCORE_POSITION;
+        break;
+      case LEFT_L4:
+        elevatorPosition = Constants.ElevatorConstants.L4_SCORE_POSITION;
+        break;
+      case RIGHT_L1:
+        elevatorPosition = Constants.ElevatorConstants.L1_SCORE_POSITION;
+        break;
+      case RIGHT_L2:
+        elevatorPosition = Constants.ElevatorConstants.L2_SCORE_POSITION;
+        break;
+      case RIGHT_L3:
+        elevatorPosition = Constants.ElevatorConstants.L3_SCORE_POSITION;
+        break;
+      case RIGHT_L4:
+        elevatorPosition = Constants.ElevatorConstants.L4_SCORE_POSITION;
+        break;
+      default:
+        elevatorPosition = Constants.ElevatorConstants.HOME_POSITION;
+        break;
     }
-  }
 
-
-  private void executeScoreCoralState() {
-    switch (Dashboard.getSelectedCoralPosition()) {
-        CASE LEFT_L1:
-            executeScoreCoral(Constants.ElevatorConstants.L1_SCORE_POSITION);
-            break;
-        CASE LEFT_L2:
-            executeScoreCoral(Constants.ElevatorConstants.L2_SCORE_POSITION);
-            break;
-        CASE LEFT_L3:
-            executeScoreCoral(Constants.ElevatorConstants.L3_SCORE_POSITION);
-            break;
-        CASE LEFT_L4:
-            executeScoreCoral(Constants.ElevatorConstants.L4_SCORE_POSITION);
-            break;
-        
-    }
-  }
-
-
-  private void executeScoreCoral(double score_position, boolean isLeftSide) {
     if (sensorsSubsystem.hasPiece()) {
       // need to implement position logic here
-        if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L1_SCORE_POSITION)) { // move elevator to height if its not already there
-          elevatorSubsystem.setPosition(Constants.ElevatorConstants.L1_SCORE_POSITION); 
-        } else {  // if elevator is at height, outtake coral
-          endEffectorSubsystem.outtakeCoral();
-        }
-    } else { // No piece, intake coral instead. 
-      if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.HOME_POSITION)) { // if no piece and elevator not home 
-        elevatorSubsystem.setPosition(Constants.ElevatorConstants.HOME_POSITION); // move elevator to home
-        endEffectorSubsystem.setVoltage(Constants.EndEffectorConstants.STOP_VOLTAGE); // turn off end effector
+      if (!elevatorSubsystem.isAtPosition(
+          elevatorPosition)) { // move elevator to height if its not already there
+        elevatorSubsystem.setPosition(elevatorPosition);
+      } else { // if elevator is at height, outtake coral
+        endEffectorSubsystem.outtakeCoral();
+      }
+    } else { // No piece, intake coral instead.
+      if (!elevatorSubsystem.isAtPosition(
+          Constants.ElevatorConstants.HOME_POSITION)) { // if no piece and elevator not home
+        elevatorSubsystem.setPosition(
+            Constants.ElevatorConstants.HOME_POSITION); // move elevator to home
+        endEffectorSubsystem.setVoltage(
+            Constants.EndEffectorConstants.STOP_VOLTAGE); // turn off end effector
       }
       setWantedState(RobotState.INTAKE_CORAL);
     }
@@ -324,11 +244,35 @@ public class StateMachine extends SubsystemBase {
     return runOnce(() -> wantedRobotState = state);
   }
 
-  public boolean getAlgaeShouldGoDown() {
-    return shouldHoldAlgae;
+  public void removeAlgaeUpper() {
+    if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION)) {
+      elevatorSubsystem.setPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION);
+    }
+    if (!algaeWristSubsystem.isAtDownPosition()) {
+      algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE);
+    }
+    if (!algaeIntakeSubsystem.isRunning()) {
+      algaeIntakeSubsystem.outtakeAlgae();
+    }
   }
 
-  public boolean getShouldReturnToReadyStateFromHoldingAlgae() {
-    return shouldReturnToReadyStateFromHoldingAlgae;
+  public void removeAlgaeLower() {
+    if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L2_ALGAE_POSITION)) {
+      elevatorSubsystem.setPosition(Constants.ElevatorConstants.L2_ALGAE_POSITION);
+    }
+    if (!algaeWristSubsystem.isAtDownPosition()) {
+      algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE);
+    }
+    if (!algaeIntakeSubsystem.isRunning()) {
+      algaeIntakeSubsystem.outtakeAlgae();
+    }
+  }
+
+  public CoralPositions getSelectedCoralPosition() {
+    return selectedCoralPosition;
+  }
+
+  public void setSelectedCoralPosition(CoralPositions position) {
+    selectedCoralPosition = position;
   }
 }

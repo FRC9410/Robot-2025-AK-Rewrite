@@ -1,22 +1,16 @@
-
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
 
-import java.util.function.BiConsumer;
-
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.MapConstants;
-import frc.robot.Constants.ScoringConstants;
+import java.util.function.BiConsumer;
 
 public class Dashboard extends SubsystemBase {
   private final NetworkTableInstance inst;
@@ -25,7 +19,7 @@ public class Dashboard extends SubsystemBase {
   private Auto auto;
   private boolean isClimbing;
   private final BiConsumer<String, Object> updateData;
-  
+
   /** Creates a new Dashboard. */
   public Dashboard(BiConsumer<String, Object> updateData) {
     this.updateData = updateData;
@@ -74,7 +68,7 @@ public class Dashboard extends SubsystemBase {
     }
 
     final Auto newAuto = getAuto();
-    if (newAuto!= auto) {
+    if (newAuto != auto) {
       setAuto(newAuto);
     }
 
@@ -88,15 +82,18 @@ public class Dashboard extends SubsystemBase {
   // public ReefSide getReefSide() {
   //   if (table.getEntry("front").getBoolean(false) && reefSide != ReefSide.FRONT) {
   //     return ReefSide.FRONT;
-  //   } else if (table.getEntry("front_left").getBoolean(false) && reefSide != ReefSide.FRONT_LEFT) {
+  //   } else if (table.getEntry("front_left").getBoolean(false) && reefSide != ReefSide.FRONT_LEFT)
+  // {
   //     return ReefSide.FRONT_LEFT;
-  //   } else if (table.getEntry("front_right").getBoolean(false) && reefSide != ReefSide.FRONT_RIGHT) {
+  //   } else if (table.getEntry("front_right").getBoolean(false) && reefSide !=
+  // ReefSide.FRONT_RIGHT) {
   //     return ReefSide.FRONT_RIGHT;
   //   } else if (table.getEntry("back").getBoolean(false) && reefSide != ReefSide.BACK) {
   //     return ReefSide.BACK;
   //   } else if (table.getEntry("back_left").getBoolean(false) && reefSide != ReefSide.BACK_LEFT) {
   //     return ReefSide.BACK_LEFT;
-  //   } else if (table.getEntry("back_right").getBoolean(false) && reefSide != ReefSide.BACK_RIGHT) {
+  //   } else if (table.getEntry("back_right").getBoolean(false) && reefSide != ReefSide.BACK_RIGHT)
+  // {
   //     return ReefSide.BACK_RIGHT;
   //   }
   //   return reefSide;
@@ -114,19 +111,26 @@ public class Dashboard extends SubsystemBase {
   public CoralPositions getCoralSelection() {
     if (table.getEntry("l1").getBoolean(false) && selectedCoralPosition != CoralPositions.LEFT_L1) {
       return CoralPositions.LEFT_L1;
-    } else if (table.getEntry("l2").getBoolean(false) && selectedCoralPosition != CoralPositions.LEFT_L2) {
+    } else if (table.getEntry("l2").getBoolean(false)
+        && selectedCoralPosition != CoralPositions.LEFT_L2) {
       return CoralPositions.LEFT_L2;
-    } else if (table.getEntry("l3").getBoolean(false) && selectedCoralPosition != CoralPositions.LEFT_L3) {
+    } else if (table.getEntry("l3").getBoolean(false)
+        && selectedCoralPosition != CoralPositions.LEFT_L3) {
       return CoralPositions.LEFT_L3;
-    } else if (table.getEntry("l4").getBoolean(false) && selectedCoralPosition != CoralPositions.LEFT_L4) {
+    } else if (table.getEntry("l4").getBoolean(false)
+        && selectedCoralPosition != CoralPositions.LEFT_L4) {
       return CoralPositions.LEFT_L4;
-    } else if (table.getEntry("l1").getBoolean(false) && selectedCoralPosition != CoralPositions.RIGHT_L1) {
+    } else if (table.getEntry("l1").getBoolean(false)
+        && selectedCoralPosition != CoralPositions.RIGHT_L1) {
       return CoralPositions.RIGHT_L1;
-    } else if (table.getEntry("l2").getBoolean(false) && selectedCoralPosition != CoralPositions.RIGHT_L2) {
+    } else if (table.getEntry("l2").getBoolean(false)
+        && selectedCoralPosition != CoralPositions.RIGHT_L2) {
       return CoralPositions.RIGHT_L2;
-    } else if (table.getEntry("l3").getBoolean(false) && selectedCoralPosition != CoralPositions.RIGHT_L3) {
+    } else if (table.getEntry("l3").getBoolean(false)
+        && selectedCoralPosition != CoralPositions.RIGHT_L3) {
       return CoralPositions.RIGHT_L3;
-    } else if (table.getEntry("l4").getBoolean(false) && selectedCoralPosition != CoralPositions.RIGHT_L4) {
+    } else if (table.getEntry("l4").getBoolean(false)
+        && selectedCoralPosition != CoralPositions.RIGHT_L4) {
       return CoralPositions.RIGHT_L4;
     }
     return selectedCoralPosition;
@@ -158,7 +162,7 @@ public class Dashboard extends SubsystemBase {
     return auto;
   }
 
-  public boolean getIsClimbing () {
+  public boolean getIsClimbing() {
     return isClimbing;
   }
 
@@ -179,7 +183,9 @@ public class Dashboard extends SubsystemBase {
     table.getEntry("redRight").setBoolean(false);
     table.getEntry("blueLeft").setBoolean(false);
     table.getEntry("blueRight").setBoolean(false);
-    table.getEntry("isRed").setBoolean(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red);
+    table
+        .getEntry("isRed")
+        .setBoolean(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red);
 
     selectedCoralPosition = null;
     auto = null;
@@ -231,7 +237,6 @@ public class Dashboard extends SubsystemBase {
   //       break;
   //   }
   // }
-
 
   public void setCoralSelection(CoralPositions position) {
     if (position == null) {
@@ -293,7 +298,6 @@ public class Dashboard extends SubsystemBase {
 
   // public Pose2d getScoringPose () {
   //   final boolean isRed = drivingTable.getEntry("invert paths").getBoolean(false);
-
 
   //   if (reefSide == null || coralSide == null) {
   //     return null;
@@ -392,7 +396,7 @@ public class Dashboard extends SubsystemBase {
         return CoralPositions.RIGHT_L3;
       case RIGHT_L4:
         return CoralPositions.RIGHT_L4;
-      default: 
+      default:
         return CoralPositions.NO_POSITION;
     }
   }

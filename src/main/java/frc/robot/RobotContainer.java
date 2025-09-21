@@ -16,8 +16,6 @@ package frc.robot;
 import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
 import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
 
-import java.lang.Thread.State;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -31,6 +29,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeIntakeSubsystem;
 import frc.robot.subsystems.AlgaeWristSubsystem;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.EndEffectorSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
@@ -65,6 +64,7 @@ public class RobotContainer {
   private final SensorsSubsystem sensorsSubsystem;
   private final ElevatorSubsystem elevatorSubsystem;
   private final EndEffectorSubsystem endEffectorSubsystem;
+  private final ClimberSubsystem climberSubsystem;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -80,7 +80,16 @@ public class RobotContainer {
     sensorsSubsystem = new SensorsSubsystem(null);
     elevatorSubsystem = new ElevatorSubsystem(null);
     endEffectorSubsystem = new EndEffectorSubsystem(null);
-    stateMachine = new StateMachine(hopperSubsystem, algaeWristSubsystem, algaeIntakeSubsystem, sensorsSubsystem, elevatorSubsystem, endEffectorSubsystem);
+    climberSubsystem = new ClimberSubsystem(null);
+    stateMachine =
+        new StateMachine(
+            hopperSubsystem,
+            algaeWristSubsystem,
+            algaeIntakeSubsystem,
+            sensorsSubsystem,
+            elevatorSubsystem,
+            endEffectorSubsystem,
+            climberSubsystem);
 
     switch (Constants.currentMode) {
       case REAL:
@@ -184,8 +193,9 @@ public class RobotContainer {
     controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     // Reset gyro to 0° when B button is pressed
+
     controller
-        .b()
+        .start()
         .onTrue(
             Commands.runOnce(
                     () ->
@@ -194,58 +204,49 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    controller // Coral intake input
+    controller
+        .leftTrigger()
+        .onTrue(
+            Commands.runOnce(
+                () -> stateMachine.setSelectedCoralPosition(
+                            StateMachine.CoralPositions.LEFT_L2)));
+
+    controller
         .rightBumper()
-        .onTrue(stateMachine.setWantedState(StateMachine.RobotState.INTAKE_CORAL));
-    
-    controller
-        .x()
         .onTrue(
-        Commands.runOnce(() -> {
-            if (stateMachine.getAlgaeShouldGoDown()) {
-              stateMachine.setWantedState(StateMachine.RobotState.HOLD_ALGAE);
-            } else {
-              stateMachine.setWantedState(StateMachine.RobotState.INTAKE_ALGAE_LOWER);
-            }
-        })
-    );
+            Commands.runOnce(
+                () ->   stateMachine.setSelectedCoralPosition(
+                            StateMachine.CoralPositions.LEFT_L4)));
 
     controller
-        .y()
+        .rightTrigger()
         .onTrue(
-          Commands.runOnce(() -> {
-            if (stateMachine.getAlgaeShouldGoDown()) {
-              stateMachine.setWantedState(StateMachine.RobotState.HOLD_ALGAE);
-            } else {
-              stateMachine.setWantedState(StateMachine.RobotState.INTAKE_ALGAE_UPPER);
-            }
-        })
-    );
-
-    controller 
-        .a()
-        .onTrue(
-          Commands.runOnce(() -> {
-            if (stateMachine.getAlgaeShouldGoDown()) {
-              stateMachine.setWantedState(StateMachine.RobotState.HOLD_ALGAE);
-            } else {
-              stateMachine.setWantedState(StateMachine.RobotState.INTAKE_ALGAE_GROUND);
-            }
-        })
-    );
+            Commands.runOnce(
+                () ->   stateMachine.setSelectedCoralPosition(
+                            StateMachine.CoralPositions.RIGHT_L2)));
 
     controller
-        .b()
+        .rightBumper()
         .onTrue(
-          Commands.runOnce(() -> {
-            if (stateMachine.getShouldReturnToReadyStateFromHoldingAlgae()) {
-              stateMachine.setWantedState(StateMachine.RobotState.READY_STATE);
-            } else {
-              stateMachine.setWantedState(StateMachine.RobotState.SCORE_ALGAE_BARGE);
-            }
-        })
-    );
+            Commands.runOnce(
+                () ->   stateMachine.setSelectedCoralPosition(
+                            StateMachine.CoralPositions.RIGHT_L4)));
+
+    controller
+        .rightTrigger()
+        .and(controller.leftTrigger())
+        .onTrue(Commands.runOnce(() -> stateMachine.setWantedState(StateMachine.RobotState.DESCORE_ALGAE_LOWER)))
+        .onFalse(Commands.runOnce(() -> stateMachine.setWantedState(StateMachine.RobotState.READY_STATE)));
+
+    controller
+        .rightBumper()
+        .and(controller.leftBumper())
+        .onTrue(Commands.runOnce(() -> stateMachine.setWantedState(StateMachine.RobotState.DESCORE_ALGAE_UPPER)))
+        .onFalse(Commands.runOnce(() -> stateMachine.setWantedState(StateMachine.RobotState.READY_STATE)));
   }
+
+  // new POVButton(driverController, 0)
+  // .whenPressed();
 
   public HopperSubsystem getHopper() {
     return hopperSubsystem;

@@ -65,7 +65,8 @@ public class SensorsSubsystem extends SubsystemBase {
   }
 
   public boolean hasPiece() {
-    return isOuttakeLaserBroken() && !isIntakeLaserBroken(); // FIX FOR POTENTIAL MECHANICAL LOGIC ERROR
+    return isOuttakeLaserBroken()
+        && !isIntakeLaserBroken(); // FIX FOR POTENTIAL MECHANICAL LOGIC ERROR
   }
 
   public boolean isOuttakeLaserBroken() {

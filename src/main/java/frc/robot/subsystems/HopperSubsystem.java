@@ -47,10 +47,10 @@ public class HopperSubsystem extends SubsystemBase {
     primaryMotor.setVoltage(Constants.HopperConstants.STOP_VOLTAGE);
   }
 
-
   public void startMotors() {
     setVoltage(Constants.HopperConstants.START_VOLTAGE);
   }
+
   public void stopMotors() {
     setVoltage(Constants.HopperConstants.STOP_VOLTAGE);
   }
@@ -62,7 +62,6 @@ public class HopperSubsystem extends SubsystemBase {
    *
    * @param speed The desired motor output (range between -1 and 1).
    */
-
   public void setVoltage(double voltage) {
     if (voltage != this.voltage) {
       this.voltage = voltage;

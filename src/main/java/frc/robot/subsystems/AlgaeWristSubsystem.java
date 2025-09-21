@@ -79,8 +79,7 @@ public class AlgaeWristSubsystem extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
-  }
+  public void periodic() {}
 
   /**
    * Commands the wrist to move to a specific target angle (in degrees). The target angle is clamped
@@ -90,9 +89,6 @@ public class AlgaeWristSubsystem extends SubsystemBase {
    *
    * @param targetAngleDegrees The desired target angle in degrees.
    */
-
-  
-
   public void setPosition(double position) {
     setpoint = position;
     wristMotor.setControl(motionMagicRequest.withPosition(setpoint).withSlot(0));
@@ -121,5 +117,4 @@ public class AlgaeWristSubsystem extends SubsystemBase {
   public Command moveWristToSetpointCommand(double setpoint) {
     return runOnce(() -> setPosition(setpoint));
   }
-
 }
