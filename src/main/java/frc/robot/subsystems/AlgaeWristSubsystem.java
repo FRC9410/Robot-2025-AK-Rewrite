@@ -19,12 +19,10 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import java.util.function.BiConsumer;
 
 public class AlgaeWristSubsystem extends SubsystemBase {
   private final TalonFX wristMotor;
   private final CANcoder cancoder;
-  private final BiConsumer<String, Object> updateData;
   private double voltage;
   private double setpoint;
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
@@ -34,7 +32,7 @@ public class AlgaeWristSubsystem extends SubsystemBase {
    * @param motorID CAN ID for the wrist motor.
    * @param encoderID CAN ID for the absolute encoder.
    */
-  public AlgaeWristSubsystem(BiConsumer<String, Object> updateData) {
+  public AlgaeWristSubsystem() {
     wristMotor =
         new TalonFX(Constants.AlgaeWristConstants.CAN_ID, Constants.CanBusConstants.CANIVORE_BUS);
     cancoder =
@@ -73,7 +71,6 @@ public class AlgaeWristSubsystem extends SubsystemBase {
     BaseStatusSignal.setUpdateFrequencyForAll(100, cancoder.getPosition(), cancoder.getVelocity());
     wristMotor.setNeutralMode(NeutralModeValue.Brake);
 
-    this.updateData = updateData;
     setpoint = 0.8;
     wristMotor.setControl(motionMagicRequest.withPosition(0.07).withSlot(0));
   }

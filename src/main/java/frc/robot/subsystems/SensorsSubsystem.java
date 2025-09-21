@@ -9,19 +9,14 @@ import au.grapplerobotics.LaserCan;
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.MapConstants;
-import java.util.function.BiConsumer;
 
 public class SensorsSubsystem extends SubsystemBase {
-  private final BiConsumer<String, Object> updateData;
   private final LaserCan intakeLaser;
   private final LaserCan outtakeLaser;
   /** Creates a new Sensors. */
-  public SensorsSubsystem(BiConsumer<String, Object> updateData) {
+  public SensorsSubsystem() {
     intakeLaser = new LaserCan(Constants.SensorConstants.INTAKE_LASER_CAN_ID);
     outtakeLaser = new LaserCan(Constants.SensorConstants.OUTTAKE_LASER_CAN_ID);
-
-    this.updateData = updateData;
 
     if (!Utils.isSimulation()) {
       try {
@@ -43,9 +38,7 @@ public class SensorsSubsystem extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
-    updateData.accept(MapConstants.HAS_PIECE, isOuttakeLaserBroken() && !isIntakeLaserBroken());
-  }
+  public void periodic() {}
 
   private double getIntakeLaserMeasurement() {
     return intakeLaser.getMeasurement().distance_mm;

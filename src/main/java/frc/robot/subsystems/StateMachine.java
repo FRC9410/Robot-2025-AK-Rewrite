@@ -4,9 +4,6 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
-
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -94,11 +91,12 @@ public class StateMachine extends SubsystemBase {
   private void handleRobotStateTransitions() {
     if (this.currentRobotState != this.wantedRobotState) {
       this.currentRobotState = READY_STATE;
-      if (isReadyState()) {
+      if (true) { // isReadyState()) {
         this.currentRobotState = this.wantedRobotState;
       }
     }
 
+    System.out.println(currentRobotState.toString());
     switch (this.currentRobotState) {
       case READY_STATE:
         executeReadyState();
@@ -139,7 +137,7 @@ public class StateMachine extends SubsystemBase {
       hopperMotorsRunning = false;
     }
     if (endEffectorMotorsRunning) { // stop end effector motors
-      endEffectorSubsystem.stopMotors();
+      endEffectorSubsystem.setVelocity(0);
       endEffectorMotorsRunning = false;
     }
     if (!elevatorSubsystem.isAtPosition(
@@ -169,12 +167,12 @@ public class StateMachine extends SubsystemBase {
       }
       if (sensorsSubsystem.isIntakeLaserBroken()) { // if intake beam broken
         if (!endEffectorMotorsRunning) { // turn on end effector
-          endEffectorSubsystem.intakeCoral();
+          endEffectorSubsystem.setVelocity(7);
           endEffectorMotorsRunning = true;
         }
       } else { // if intake beam is not broken
         if (endEffectorMotorsRunning) { // stop end effector
-          endEffectorSubsystem.stopMotors();
+          endEffectorSubsystem.setVelocity(0);
           endEffectorMotorsRunning = false;
         }
       }
@@ -222,26 +220,28 @@ public class StateMachine extends SubsystemBase {
 
     if (sensorsSubsystem.hasPiece()) {
       // need to implement position logic here
-      if (!elevatorSubsystem.isAtPosition(
-          elevatorPosition)) { // move elevator to height if its not already there
-        elevatorSubsystem.setPosition(elevatorPosition);
-      } else { // if elevator is at height, outtake coral
-        endEffectorSubsystem.outtakeCoral();
-      }
+      // if (!elevatorSubsystem.isAtPosition(
+      //     elevatorPosition)) { // move elevator to height if its not already there
+      //   elevatorSubsystem.setPosition(elevatorPosition);
+      // } else { // if elevator is at height, outtake coral
+      //   endEffectorSubsystem.outtakeCoral();
+      // }
     } else { // No piece, intake coral instead.
       if (!elevatorSubsystem.isAtPosition(
           Constants.ElevatorConstants.HOME_POSITION)) { // if no piece and elevator not home
-        elevatorSubsystem.setPosition(
-            Constants.ElevatorConstants.HOME_POSITION); // move elevator to home
-        endEffectorSubsystem.setVoltage(
-            Constants.EndEffectorConstants.STOP_VOLTAGE); // turn off end effector
+        //   elevatorSubsystem.setPosition(
+        //       Constants.ElevatorConstants.HOME_POSITION); // move elevator to home
+        //   endEffectorSubsystem.setVoltage(
+        //       Constants.EndEffectorConstants.STOP_VOLTAGE); // turn off end effector
+        System.out.println("True");
       }
       setWantedState(RobotState.INTAKE_CORAL);
+      System.out.println("False");
     }
   }
 
-  public Command setWantedState(RobotState state) {
-    return runOnce(() -> wantedRobotState = state);
+  public void setWantedState(RobotState state) {
+    wantedRobotState = state;
   }
 
   public void removeAlgaeUpper() {
@@ -274,5 +274,6 @@ public class StateMachine extends SubsystemBase {
 
   public void setSelectedCoralPosition(CoralPositions position) {
     selectedCoralPosition = position;
+    setWantedState(RobotState.SCORAL);
   }
 }

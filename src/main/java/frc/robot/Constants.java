@@ -190,7 +190,7 @@ public final class Constants {
     public static final int CAN_ID = 23;
     public static final double END_EFFECTOR_VOLTAGE = 4.0;
     public static final double STOP_VOLTAGE = 0.0;
-    public static final double END_EFFECTOR_INTAKE_VOLTAGE = 2;
+    public static final double END_EFFECTOR_INTAKE_VOLTAGE = 1;
   }
 
   public static final class HopperConstants {

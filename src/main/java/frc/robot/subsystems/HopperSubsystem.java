@@ -16,7 +16,6 @@ public class HopperSubsystem extends SubsystemBase {
   private final TalonFX primaryMotor;
   private final TalonFX secondaryMotor;
   private static final NeutralOut brake = new NeutralOut();
-  // private final BiConsumer<String, Object> updateData;
   private double voltage;
 
   /**

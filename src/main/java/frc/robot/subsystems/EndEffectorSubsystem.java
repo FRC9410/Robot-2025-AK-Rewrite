@@ -1,28 +1,44 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import java.util.function.BiConsumer;
 
 public class EndEffectorSubsystem extends SubsystemBase {
   private final TalonFX endEffectorMotor;
   private static final NeutralOut brake = new NeutralOut();
-  private final BiConsumer<String, Object> updateData;
   private double voltage;
 
+  private final MotionMagicVelocityTorqueCurrentFOC motionMagicRequest;
+
   /** Constructor for the EndEffector subsystem. */
-  public EndEffectorSubsystem(BiConsumer<String, Object> updateData) {
+  public EndEffectorSubsystem() {
     endEffectorMotor =
         new TalonFX(Constants.EndEffectorConstants.CAN_ID, Constants.CanBusConstants.CANIVORE_BUS);
 
     endEffectorMotor.setNeutralMode(NeutralModeValue.Brake);
 
-    this.updateData = updateData;
-
     endEffectorMotor.setVoltage(Constants.EndEffectorConstants.STOP_VOLTAGE);
+
+    motionMagicRequest = new MotionMagicVelocityTorqueCurrentFOC(0);
+
+    TalonFXConfiguration config = new TalonFXConfiguration();
+    MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+    motionMagicConfigs
+        // .withMotionMagicCruiseVelocity(Constants.ElevatorConstants.MOTION_MAGIC_VELOCITY)
+        .withMotionMagicAcceleration(Constants.ElevatorConstants.MOTION_MAGIC_ACCELERATION);
+
+    // Configure PID
+    config.Slot0.kP = 40.0;
+
+    endEffectorMotor.getConfigurator().apply(config);
+    endEffectorMotor.getConfigurator().apply(motionMagicConfigs);
+    endEffectorMotor.setNeutralMode(NeutralModeValue.Brake);
   }
 
   @Override
@@ -54,6 +70,14 @@ public class EndEffectorSubsystem extends SubsystemBase {
       endEffectorMotor.setVoltage(voltage);
     }
     // No need to command secondaryMotor here since it follows primaryMotor in reverse.
+  }
+
+  public void setVelocity(double velocity) {
+    if (velocity == 0) {
+      endEffectorMotor.setControl(brake);
+    } else {
+      endEffectorMotor.setControl(motionMagicRequest.withVelocity(velocity).withSlot(0));
+    }
   }
 
   public boolean isReady() {

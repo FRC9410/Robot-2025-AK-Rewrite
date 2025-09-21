@@ -8,12 +8,10 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import java.util.function.BiConsumer;
 
 public class AlgaeIntakeSubsystem extends SubsystemBase {
   private final TalonFX intakeMotor;
   private static final NeutralOut brake = new NeutralOut();
-  private final BiConsumer<String, Object> updateData;
   private double voltage;
   private boolean hasGamePiece = false;
   private static final VelocityVoltage voltageVelocity = new VelocityVoltage(-100);
@@ -24,7 +22,7 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
    *
    * @param motorID CAN ID for the intake motor.
    */
-  public AlgaeIntakeSubsystem(BiConsumer<String, Object> updateData) {
+  public AlgaeIntakeSubsystem() {
     intakeMotor =
         new TalonFX(Constants.AlgaeIntakeConstants.CAN_ID, Constants.CanBusConstants.CANIVORE_BUS);
 
@@ -33,8 +31,6 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
 
     // Set neutral mode; coast mode is often preferred for an intake.
     intakeMotor.setNeutralMode(NeutralModeValue.Brake);
-
-    this.updateData = updateData;
 
     voltage = Constants.AlgaeIntakeConstants.STOP_VOLTAGE;
     setIntakeConfigs(intakeMotor);

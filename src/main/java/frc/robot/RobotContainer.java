@@ -17,12 +17,11 @@ import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
 import static frc.robot.subsystems.vision.VisionConstants.camera1Name;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -75,12 +74,12 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     hopperSubsystem = new HopperSubsystem();
-    algaeWristSubsystem = new AlgaeWristSubsystem(null);
-    algaeIntakeSubsystem = new AlgaeIntakeSubsystem(null);
-    sensorsSubsystem = new SensorsSubsystem(null);
-    elevatorSubsystem = new ElevatorSubsystem(null);
-    endEffectorSubsystem = new EndEffectorSubsystem(null);
-    climberSubsystem = new ClimberSubsystem(null);
+    algaeWristSubsystem = new AlgaeWristSubsystem();
+    algaeIntakeSubsystem = new AlgaeIntakeSubsystem();
+    sensorsSubsystem = new SensorsSubsystem();
+    elevatorSubsystem = new ElevatorSubsystem();
+    endEffectorSubsystem = new EndEffectorSubsystem();
+    climberSubsystem = new ClimberSubsystem();
     stateMachine =
         new StateMachine(
             hopperSubsystem,
@@ -180,69 +179,81 @@ public class RobotContainer {
             () -> -controller.getRightX()));
 
     // Lock to 0° when A button is held
-    controller
-        .leftBumper()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> new Rotation2d()));
+    // controller
+    //     .leftBumper()
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtAngle(
+    //             drive,
+    //             () -> -controller.getLeftY(),
+    //             () -> -controller.getLeftX(),
+    //             () -> new Rotation2d()));
 
-    // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    // // Switch to X pattern when X button is pressed
+    // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     // Reset gyro to 0° when B button is pressed
 
-    controller
-        .start()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
+    // controller
+    //     .start()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //                 () ->
+    //                     drive.setPose(
+    //                         new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+    //                 drive)
+    //             .ignoringDisable(true));
 
     controller
-        .leftTrigger()
+        .leftTrigger(0.5)
         .onTrue(
-            Commands.runOnce(
-                () -> stateMachine.setSelectedCoralPosition(
-                            StateMachine.CoralPositions.LEFT_L2)));
+            new InstantCommand(
+                () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L2)));
 
     controller
-        .rightBumper()
+        .leftBumper()
         .onTrue(
             Commands.runOnce(
-                () ->   stateMachine.setSelectedCoralPosition(
-                            StateMachine.CoralPositions.LEFT_L4)));
+                () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)));
+
+    controller
+        .povLeft()
+        .onTrue(
+            Commands.runOnce(
+                () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L3)));
 
     controller
         .rightTrigger()
         .onTrue(
             Commands.runOnce(
-                () ->   stateMachine.setSelectedCoralPosition(
-                            StateMachine.CoralPositions.RIGHT_L2)));
+                () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L2)));
 
     controller
         .rightBumper()
         .onTrue(
             Commands.runOnce(
-                () ->   stateMachine.setSelectedCoralPosition(
-                            StateMachine.CoralPositions.RIGHT_L4)));
+                () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L4)));
 
     controller
-        .rightTrigger()
-        .and(controller.leftTrigger())
-        .onTrue(Commands.runOnce(() -> stateMachine.setWantedState(StateMachine.RobotState.DESCORE_ALGAE_LOWER)))
-        .onFalse(Commands.runOnce(() -> stateMachine.setWantedState(StateMachine.RobotState.READY_STATE)));
+        .povRight()
+        .onTrue(
+            Commands.runOnce(
+                () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L3)));
 
-    controller
-        .rightBumper()
-        .and(controller.leftBumper())
-        .onTrue(Commands.runOnce(() -> stateMachine.setWantedState(StateMachine.RobotState.DESCORE_ALGAE_UPPER)))
-        .onFalse(Commands.runOnce(() -> stateMachine.setWantedState(StateMachine.RobotState.READY_STATE)));
+    // controller
+    //     .rightTrigger()
+    //     .and(controller.leftTrigger())
+    //     .onTrue(Commands.runOnce(() ->
+    // stateMachine.setWantedState(StateMachine.RobotState.DESCORE_ALGAE_LOWER)))
+    //     .onFalse(Commands.runOnce(() ->
+    // stateMachine.setWantedState(StateMachine.RobotState.READY_STATE)));
+
+    // controller
+    //     .rightBumper()
+    //     .and(controller.leftBumper())
+    //     .onTrue(Commands.runOnce(() ->
+    // stateMachine.setWantedState(StateMachine.RobotState.DESCORE_ALGAE_UPPER)))
+    //     .onFalse(Commands.runOnce(() ->
+    // stateMachine.setWantedState(StateMachine.RobotState.READY_STATE)));
   }
 
   // new POVButton(driverController, 0)

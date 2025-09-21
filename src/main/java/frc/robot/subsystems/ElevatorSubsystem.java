@@ -8,7 +8,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import java.util.function.BiConsumer;
 
 public class ElevatorSubsystem extends SubsystemBase {
   private final TalonFX elevatorMotor =
@@ -18,11 +17,10 @@ public class ElevatorSubsystem extends SubsystemBase {
       new TalonFX(
           Constants.ElevatorConstants.SECONDARY_CAN_ID, Constants.CanBusConstants.CANIVORE_BUS);
   private final MotionMagicVoltage motionMagicRequest;
-  private final BiConsumer<String, Object> updateData;
   private double voltage;
   private double setpoint;
 
-  public ElevatorSubsystem(BiConsumer<String, Object> updateData) {
+  public ElevatorSubsystem() {
     // Create the position request for closed-loop control
     motionMagicRequest = new MotionMagicVoltage(0);
 
@@ -61,24 +59,14 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     elevatorFollowerMotor.setControl(new Follower(elevatorMotor.getDeviceID(), true));
 
-    this.updateData = updateData;
-
     voltage = Constants.ElevatorConstants.STOP_VOLTAGE;
     setpoint = Constants.ElevatorConstants.HOME_POSITION;
     // elevatorMotor.setControl(motionMagicRequest.withPosition(0.25).withSlot(0));
   }
 
   @Override
-  public void periodic() {
-    updateData.accept("Elevator Position", getCurrentHeight());
-    updateData.accept("Elevator Setpoint", setpoint);
-  }
+  public void periodic() {}
 
-  /**
-   * Sets the elevator to a specific height
-   *
-   * @param heightMeters The target height in meters
-   */
   public void setPosition(double position) {
     if (position != setpoint) {
       setpoint = position;
