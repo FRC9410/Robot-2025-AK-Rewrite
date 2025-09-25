@@ -102,6 +102,8 @@ public final class Constants {
     public static final double MAX_POSITION = 0.0; // Placeholder
     public static final double OFFSET_POSITION = -0.16; // Placeholder
     // Additional preset angles for Algae Wrist positions (in units; placeholders)
+    public static final double DOWN_POSITION = 0.31;
+    public static final double UP_POSITION = 0.05;
     public static final double REEF_POSITION = 0.0; // Placeholder value for reef angle
     public static final double LAYUP_POSITION = 0.0; // Placeholder value for layup angle
     public static final double PLACE_POSITION = 0.0; // Placeholder value for place angle

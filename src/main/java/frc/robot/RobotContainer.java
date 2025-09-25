@@ -239,21 +239,25 @@ public class RobotContainer {
             Commands.runOnce(
                 () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L3)));
 
-    // controller
-    //     .rightTrigger()
-    //     .and(controller.leftTrigger())
-    //     .onTrue(Commands.runOnce(() ->
-    // stateMachine.setWantedState(StateMachine.RobotState.DESCORE_ALGAE_LOWER)))
-    //     .onFalse(Commands.runOnce(() ->
-    // stateMachine.setWantedState(StateMachine.RobotState.READY_STATE)));
+    controller
+        .rightTrigger()
+        .and(controller.leftTrigger())
+        .onTrue(
+            Commands.runOnce(
+                () -> stateMachine.setWantedState(StateMachine.RobotState.DESCORE_ALGAE_LOWER)))
+        .onFalse(
+            Commands.runOnce(
+                () -> stateMachine.setWantedState(StateMachine.RobotState.READY_STATE)));
 
-    // controller
-    //     .rightBumper()
-    //     .and(controller.leftBumper())
-    //     .onTrue(Commands.runOnce(() ->
-    // stateMachine.setWantedState(StateMachine.RobotState.DESCORE_ALGAE_UPPER)))
-    //     .onFalse(Commands.runOnce(() ->
-    // stateMachine.setWantedState(StateMachine.RobotState.READY_STATE)));
+    controller
+        .rightBumper()
+        .and(controller.leftBumper())
+        .onTrue(
+            Commands.runOnce(
+                () -> stateMachine.setWantedState(StateMachine.RobotState.DESCORE_ALGAE_UPPER)))
+        .onFalse(
+            Commands.runOnce(
+                () -> stateMachine.setWantedState(StateMachine.RobotState.READY_STATE)));
   }
 
   // new POVButton(driverController, 0)

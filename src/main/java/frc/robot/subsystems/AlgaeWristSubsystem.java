@@ -96,7 +96,7 @@ public class AlgaeWristSubsystem extends SubsystemBase {
   }
 
   public boolean isAtHomePosition() {
-    if (getPosition() == Constants.AlgaeWristConstants.WRIST_UP_VOLTAGE) {
+    if (getPosition() == Constants.AlgaeWristConstants.UP_POSITION) {
       return true;
     } else {
       return false;
@@ -104,7 +104,7 @@ public class AlgaeWristSubsystem extends SubsystemBase {
   }
 
   public boolean isAtDownPosition() {
-    if (getPosition() == Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE) {
+    if (getPosition() == Constants.AlgaeWristConstants.DOWN_POSITION) {
       return true;
     } else {
       return false;

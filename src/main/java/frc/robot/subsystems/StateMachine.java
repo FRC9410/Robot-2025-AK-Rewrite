@@ -97,6 +97,7 @@ public class StateMachine extends SubsystemBase {
     }
 
     System.out.println(currentRobotState.toString());
+    System.out.println(selectedCoralPosition.toString());
     switch (this.currentRobotState) {
       case READY_STATE:
         executeReadyState();
@@ -109,6 +110,12 @@ public class StateMachine extends SubsystemBase {
         break;
       case SCORAL:
         executeScoreCoral(selectedCoralPosition);
+        break;
+      case DESCORE_ALGAE_LOWER:
+        removeAlgaeLower();
+        break;
+      case DESCORE_ALGAE_UPPER:
+        removeAlgaeUpper();
         break;
     }
   }
@@ -147,7 +154,7 @@ public class StateMachine extends SubsystemBase {
       shouldReturnToReadyStateFromHoldingAlgae = false;
     }
     if (!algaeWristSubsystem.isAtHomePosition()) { // move algae wrist to home if not already there
-      algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE);
+      algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.UP_POSITION);
     }
     if (algaeIntakeSubsystem.isRunning()) { // stop algae intake if running
       algaeIntakeSubsystem.stopIntake();
@@ -219,20 +226,22 @@ public class StateMachine extends SubsystemBase {
     }
 
     if (sensorsSubsystem.hasPiece()) {
+      System.out.println("Has piece");
       // need to implement position logic here
-      // if (!elevatorSubsystem.isAtPosition(
-      //     elevatorPosition)) { // move elevator to height if its not already there
-      //   elevatorSubsystem.setPosition(elevatorPosition);
-      // } else { // if elevator is at height, outtake coral
-      //   endEffectorSubsystem.outtakeCoral();
-      // }
+      if (!elevatorSubsystem.isAtPosition(
+          elevatorPosition)) { // move elevator to height if its not already there
+        elevatorSubsystem.setPosition(elevatorPosition);
+      } else { // if elevator is at height, outtake coral
+        endEffectorSubsystem.outtakeCoral();
+      }
     } else { // No piece, intake coral instead.
+      System.out.println("Doesn't have piece");
       if (!elevatorSubsystem.isAtPosition(
           Constants.ElevatorConstants.HOME_POSITION)) { // if no piece and elevator not home
-        //   elevatorSubsystem.setPosition(
-        //       Constants.ElevatorConstants.HOME_POSITION); // move elevator to home
-        //   endEffectorSubsystem.setVoltage(
-        //       Constants.EndEffectorConstants.STOP_VOLTAGE); // turn off end effector
+        elevatorSubsystem.setPosition(
+            Constants.ElevatorConstants.HOME_POSITION); // move elevator to home
+        endEffectorSubsystem.setVoltage(
+            Constants.EndEffectorConstants.STOP_VOLTAGE); // turn off end effector
         System.out.println("True");
       }
       setWantedState(RobotState.INTAKE_CORAL);
@@ -245,11 +254,12 @@ public class StateMachine extends SubsystemBase {
   }
 
   public void removeAlgaeUpper() {
-    if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION)) {
-      elevatorSubsystem.setPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION);
+    if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L2_ALGAE_POSITION)) {
+      System.out.println("Moving to L1 algae position");
+      elevatorSubsystem.setPosition(Constants.ElevatorConstants.L2_ALGAE_POSITION);
     }
     if (!algaeWristSubsystem.isAtDownPosition()) {
-      algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE);
+      algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.DOWN_POSITION);
     }
     if (!algaeIntakeSubsystem.isRunning()) {
       algaeIntakeSubsystem.outtakeAlgae();
@@ -257,11 +267,11 @@ public class StateMachine extends SubsystemBase {
   }
 
   public void removeAlgaeLower() {
-    if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L2_ALGAE_POSITION)) {
-      elevatorSubsystem.setPosition(Constants.ElevatorConstants.L2_ALGAE_POSITION);
+    if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION)) {
+      elevatorSubsystem.setPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION);
     }
     if (!algaeWristSubsystem.isAtDownPosition()) {
-      algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.WRIST_DOWN_VOLTAGE);
+      algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.DOWN_POSITION);
     }
     if (!algaeIntakeSubsystem.isRunning()) {
       algaeIntakeSubsystem.outtakeAlgae();
