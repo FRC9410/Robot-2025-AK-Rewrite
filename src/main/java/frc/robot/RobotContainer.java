@@ -34,6 +34,7 @@ import frc.robot.subsystems.EndEffectorSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.SensorsSubsystem;
 import frc.robot.subsystems.StateMachine;
+import frc.robot.generated.TunerConstantsAK;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -96,10 +97,10 @@ public class RobotContainer {
         drive =
             new Drive(
                 new GyroIOPigeon2(),
-                new ModuleIOTalonFX(TunerConstants.FrontLeft),
-                new ModuleIOTalonFX(TunerConstants.FrontRight),
-                new ModuleIOTalonFX(TunerConstants.BackLeft),
-                new ModuleIOTalonFX(TunerConstants.BackRight));
+                new ModuleIOTalonFX(TunerConstantsAK.FrontLeft),
+                new ModuleIOTalonFX(TunerConstantsAK.FrontRight),
+                new ModuleIOTalonFX(TunerConstantsAK.BackLeft),
+                new ModuleIOTalonFX(TunerConstantsAK.BackRight));
 
         vision =
             new Vision(
@@ -118,10 +119,10 @@ public class RobotContainer {
         drive =
             new Drive(
                 new GyroIO() {},
-                new ModuleIOSim(TunerConstants.FrontLeft),
-                new ModuleIOSim(TunerConstants.FrontRight),
-                new ModuleIOSim(TunerConstants.BackLeft),
-                new ModuleIOSim(TunerConstants.BackRight));
+                new ModuleIOSim(TunerConstantsAK.FrontLeft),
+                new ModuleIOSim(TunerConstantsAK.FrontRight),
+                new ModuleIOSim(TunerConstantsAK.BackLeft),
+                new ModuleIOSim(TunerConstantsAK.BackRight));
 
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
         break;
