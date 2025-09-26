@@ -71,11 +71,15 @@ public class SwerveDriveCommand extends Command {
   @Override
   public void execute() {
     final Pose2d currentPose = drivetrain.getState().Pose;
-    final Pose2d targetPose =
+    Pose2d targetPose = null;
+    
+    if (currentPose != null) {
+      targetPose =
         getTargetPose(
             currentPose,
             stateMachine.getCurrentRobotState(),
             stateMachine.getCurrentCoralPosition());
+    }
 
     if (currentPose != null && targetPose != null && autoDrive) {
       final Translation2d translationToPoint =
@@ -144,6 +148,33 @@ public class SwerveDriveCommand extends Command {
         rightPositions.contains(coralPosition)
             ? "right"
             : leftPositions.contains(coralPosition) ? "left" : "";
+
+            
+    //fill in left and right for blue from constants
+    //List<Pose2d> redLeftScoringPoints = Arrays.asList()
+
+    //pick the correct red/blue and right/left list
+    //List<Pose2d> scoringLocations;
+
+    // double leastDistance;
+    // double indexOfClosestPoint;
+
+    // for (int i = 0; i < 4; i++) {
+    //   Pose2d testPoint = scoringLocations.get(i);
+    //   Translation2d distanceTranslation = currentPose.getTranslation().minus(testPoint.getTranslation());
+    //   double distance = distanceTranslation.getNorm();
+
+
+      // check for blank initial values
+
+
+    //   if (i == 0 || distance < leastDistance) {
+    //     leastDistance = distance;
+    //     indexOfClosestPoint = i;
+    //   }
+    // }
+
+
 
     //
     // logic goes here to pick the correct zone and drive to point
