@@ -43,7 +43,7 @@ public class StateMachine extends SubsystemBase {
   private boolean shouldHoldAlgae = false;
   private boolean shouldReturnToReadyStateFromHoldingAlgae = false;
 
-  public enum CoralPositions {
+  public static enum CoralPositions {
     NO_POSITION,
     LEFT_L1,
     LEFT_L2,
@@ -55,7 +55,7 @@ public class StateMachine extends SubsystemBase {
     RIGHT_L4
   }
 
-  public enum RobotState {
+  public static enum RobotState {
     READY_STATE, // This is the default state when the robot is not doing anything
     CLIMB,
     INTAKE_CORAL,
@@ -285,5 +285,13 @@ public class StateMachine extends SubsystemBase {
   public void setSelectedCoralPosition(CoralPositions position) {
     selectedCoralPosition = position;
     setWantedState(RobotState.SCORAL);
+  }
+
+  public RobotState getCurrentRobotState() {
+    return currentRobotState;
+  }
+
+  public CoralPositions getCurrentCoralPosition() {
+    return selectedCoralPosition;
   }
 }

@@ -165,5 +165,85 @@ Options for coral scoring selector:
 
 
 
+    Utility Function for checking if you are in an area (like a hexagon that is slightly bigger than the reef)
+    ---------------------
+    take in a list of (x,y) coordinates (called Points in wpilib?) and current (x, y) coordinates
+    -draw shape?
+    check if coordinate is within imaginary bounds (shape?)
+
+    // no idea if this is a thing...
+    List<Point> points = passed in points
+    Shape shape = new Shape(points)
+    shape.contains(location)
+
+
+
+
+    import edu.wpi.first.math.geometry.Translation2d;
+import java.util.List;
+
+public final class GeometryUtil {
+  private GeometryUtil() {}
+
+  /** Returns true if point p is inside polygon poly (or on its boundary).
+   *  poly: vertices in order (clockwise or ccw), not necessarily closed.
+   */
+  public static boolean pointInPolygon(List<Translation2d> poly, Translation2d p) {
+    int n = poly.size();
+    if (n < 3) return false;
+
+    // Treat "on an edge" as inside
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+      if (pointOnSegment(poly.get(j), poly.get(i), p, 1e-9)) return true;
+    }
+
+    boolean inside = false;
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+      double xi = poly.get(i).getX(), yi = poly.get(i).getY();
+      double xj = poly.get(j).getX(), yj = poly.get(j).getY();
+      boolean intersect = ((yi > p.getY()) != (yj > p.getY())) &&
+          (p.getX() < (xj - xi) * (p.getY() - yi) / ((yj - yi) == 0 ? 1e-12 : (yj - yi)) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  private static boolean pointOnSegment(Translation2d a, Translation2d b, Translation2d p, double eps) {
+    double ax = a.getX(), ay = a.getY();
+    double bx = b.getX(), by = b.getY();
+    double px = p.getX(), py = p.getY();
+
+    double abx = bx - ax, aby = by - ay;
+    double apx = px - ax, apy = py - ay;
+
+    double cross = abx * apy - aby * apx;
+    if (Math.abs(cross) > eps) return false;
+
+    double dot = abx * apx + aby * apy;
+    if (dot < -eps) return false;
+
+    double ab2 = abx * abx + aby * aby;
+    if (dot > ab2 + eps) return false;
+
+    return true;
+  }
+}
+
+
+
+
+List<Translation2d> polygon = List.of(
+  new Translation2d(1.0, 1.0),
+  new Translation2d(4.0, 1.0),
+  new Translation2d(4.0, 3.0),
+  new Translation2d(2.0, 4.0),
+  new Translation2d(1.0, 3.0)
+);
+Translation2d robot = new Translation2d(xMeters, yMeters);
+boolean inside = GeometryUtil.pointInPolygon(polygon, robot);
+
+
+
+
 
     

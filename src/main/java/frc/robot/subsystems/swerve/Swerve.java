@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
-import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -27,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import java.util.function.Supplier;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
@@ -54,8 +52,12 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       new SwerveRequest.SysIdSwerveRotation();
 
   public double MAX_SPEED = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
-  public double MAX_ANGULAR_RATE = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 0.75 rotations per second in radians per second unit
-  public double MAX_DRIVE_TO_POINT_ANGULAR_RATE = RotationsPerSecond.of(0.5).in(RadiansPerSecond); // 0.75 rotations per second in radians per second unit
+  public double MAX_ANGULAR_RATE =
+      RotationsPerSecond.of(0.75)
+          .in(RadiansPerSecond); // 0.75 rotations per second in radians per second unit
+  public double MAX_DRIVE_TO_POINT_ANGULAR_RATE =
+      RotationsPerSecond.of(0.5)
+          .in(RadiansPerSecond); // 0.75 rotations per second in radians per second unit
 
   public final SwerveRequest.FieldCentric FIELD_RELATIVE =
       new SwerveRequest.FieldCentric()
@@ -208,44 +210,34 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     setControl(request);
   }
 
-  public void drive(
-      double x,
-      double y,
-      double rotation,
-      DriveMode mode) {
+  public void drive(double x, double y, double rotation, DriveMode mode) {
 
     switch (mode) {
       case SYS_ID:
-          break;
+        break;
       case FIELD_RELATIVE:
         applyRequest(
-              FIELD_RELATIVE
-                  .withVelocityX(-x)
-                  .withVelocityY(-y)
-                  .withRotationalRate(-rotation));
+            FIELD_RELATIVE.withVelocityX(-x).withVelocityY(-y).withRotationalRate(-rotation));
         break;
       case ROBOT_RELATIVE:
         applyRequest(
-              ROBOT_RELATIVE
-                  .withVelocityX(-x)
-                  .withVelocityY(-y)
-                  .withRotationalRate(-rotation));
+            ROBOT_RELATIVE.withVelocityX(-x).withVelocityY(-y).withRotationalRate(-rotation));
         break;
       case ROTATION_LOCK:
         applyRequest(
-              DRIVE_AT_ANGLE
-                  .withVelocityX(-x)
-                  .withVelocityY(-y)
-                  .withTargetDirection(Rotation2d.fromDegrees(rotation)));
+            DRIVE_AT_ANGLE
+                .withVelocityX(-x)
+                .withVelocityY(-y)
+                .withTargetDirection(Rotation2d.fromDegrees(rotation)));
         break;
       case DRIVE_TO_POINT:
-      applyRequest(
-              DRIVE_AT_ANGLE
-                  .withVelocityX(-x)
-                  .withVelocityY(-y)
-                  .withTargetDirection(Rotation2d.fromDegrees(rotation))
-                  .withMaxAbsRotationalRate(MAX_DRIVE_TO_POINT_ANGULAR_RATE));
-      break;
+        applyRequest(
+            DRIVE_AT_ANGLE
+                .withVelocityX(-x)
+                .withVelocityY(-y)
+                .withTargetDirection(Rotation2d.fromDegrees(rotation))
+                .withMaxAbsRotationalRate(MAX_DRIVE_TO_POINT_ANGULAR_RATE));
+        break;
     }
   }
 
@@ -280,17 +272,17 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * Otherwise, only check and apply the operator perspective if the DS is disabled.
      * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
      */
-    if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
-      DriverStation.getAlliance()
-          .ifPresent(
-              allianceColor -> {
-                setOperatorPerspectiveForward(
-                    allianceColor == Alliance.Red
-                        ? kRedAlliancePerspectiveRotation
-                        : kBlueAlliancePerspectiveRotation);
-                m_hasAppliedOperatorPerspective = true;
-              });
-    }
+    // if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+    //   DriverStation.getAlliance()
+    //       .ifPresent(
+    //           allianceColor -> {
+    //             setOperatorPerspectiveForward(
+    //                 allianceColor == Alliance.Red
+    //                     ? kRedAlliancePerspectiveRotation
+    //                     : kBlueAlliancePerspectiveRotation);
+    //             m_hasAppliedOperatorPerspective = true;
+    //           });
+    // }
   }
 
   private void startSimThread() {
@@ -344,7 +336,7 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
         visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
   }
 
-  public enum DriveMode {
+  public static enum DriveMode {
     ROBOT_RELATIVE,
     FIELD_RELATIVE,
     SYS_ID,
