@@ -37,6 +37,10 @@ public final class Constants {
   public static final class AutoConstants {
     public static final double TRANSLATION_TOLERANCE = 0.05;
     public static final double ROTATION_TOLERANCE = 1.0;
+
+    public static final Pose2d TEST_POSITION = new Pose2d(5, 0, Rotation2d.fromDegrees(90.0));
+    public static final Pose2d TEST_POSITION2 = new Pose2d(0, 0.0254, Rotation2d.fromDegrees(0.0));
+    public static final Pose2d TEST_POSITION3 = new Pose2d(0, -0.0254, Rotation2d.fromDegrees(0.0));
   }
 
   public static final class VisionConstants {
@@ -204,23 +208,23 @@ public final class Constants {
     public static final double STOP_VOLTAGE = 0.0;
   }
 
-  public static final List<Translation2d> bluePolygon = List.of(
-  new Translation2d(3, 3.2),
-  new Translation2d(4.5, 2.35),
-  new Translation2d(6, 3.2),
-  new Translation2d(6, 4.85),
-  new Translation2d(4.5, 5.65),
-  new Translation2d(3, 4.85)
-  );
+  public static final List<Translation2d> bluePolygon =
+      List.of(
+          new Translation2d(3, 3.2),
+          new Translation2d(4.5, 2.35),
+          new Translation2d(6, 3.2),
+          new Translation2d(6, 4.85),
+          new Translation2d(4.5, 5.65),
+          new Translation2d(3, 4.85));
 
-  public static final List<Translation2d> redPolygon = List.of(
-    new Translation2d(11.6, 3.2),
-    new Translation2d(13.05, 2.35),
-    new Translation2d(14.55, 3.2),
-    new Translation2d(14.55, 4.85),
-    new Translation2d(13.05, 5.65),
-    new Translation2d(11.6, 4.85)
-  );
+  public static final List<Translation2d> redPolygon =
+      List.of(
+          new Translation2d(11.6, 3.2),
+          new Translation2d(13.05, 2.35),
+          new Translation2d(14.55, 3.2),
+          new Translation2d(14.55, 4.85),
+          new Translation2d(13.05, 5.65),
+          new Translation2d(11.6, 4.85));
 
   public static final class ScoringConstants {
     // Red Side

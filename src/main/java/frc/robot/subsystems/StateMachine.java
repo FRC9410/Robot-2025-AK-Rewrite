@@ -4,17 +4,14 @@
 
 package frc.robot.subsystems;
 
-import java.util.List;
-
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.RobotContainer;
-import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.util.*;
+import java.util.List;
 
 public class StateMachine extends SubsystemBase {
   HopperSubsystem hopperSubsystem;
@@ -24,8 +21,7 @@ public class StateMachine extends SubsystemBase {
   ElevatorSubsystem elevatorSubsystem;
   EndEffectorSubsystem endEffectorSubsystem;
   ClimberSubsystem climberSubsystem;
-  RobotContainer robotContainer;
-  Drive drive;
+  Swerve drive;
   // Dashboard dashboard;
 
   public StateMachine(
@@ -36,7 +32,7 @@ public class StateMachine extends SubsystemBase {
       ElevatorSubsystem elevatorSubsystem,
       EndEffectorSubsystem endEffectorSubsystem,
       ClimberSubsystem climberSubsystem,
-      RobotContainer robotContainer) {
+      Swerve drive) {
     this.hopperSubsystem = hopper;
     this.algaeWristSubsystem = algaeWrist;
     this.algaeIntakeSubsystem = algaeIntake;
@@ -44,8 +40,7 @@ public class StateMachine extends SubsystemBase {
     this.elevatorSubsystem = elevatorSubsystem;
     this.endEffectorSubsystem = endEffectorSubsystem;
     this.climberSubsystem = climberSubsystem;
-    this.robotContainer = robotContainer;
-    this.drive = robotContainer.getDrive();
+    this.drive = drive;
   }
 
   RobotState INIT_STATE = RobotState.READY_STATE;
@@ -112,7 +107,7 @@ public class StateMachine extends SubsystemBase {
 
     if (this.currentRobotState != this.wantedRobotState) {
       this.currentRobotState = READY_STATE;
-      if (true) { // isReadyState()) ????? Works fine without it? -aidan. 
+      if (true) { // isReadyState()) ????? Works fine without it? -aidan.
         this.currentRobotState = this.wantedRobotState;
       }
     }
@@ -285,7 +280,8 @@ public class StateMachine extends SubsystemBase {
       System.out.println("Moving to L1 algae position");
       elevatorSubsystem.setPosition(Constants.ElevatorConstants.L2_ALGAE_POSITION);
     }
-    final boolean inside = GeometryUtil.pointInPolygon(polygonToUse, drive.getPose().getTranslation());
+    final boolean inside =
+        GeometryUtil.pointInPolygon(polygonToUse, drive.getState().Pose.getTranslation());
     if (!algaeWristSubsystem.isAtDownPosition() && !inside) {
       algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.DOWN_POSITION);
     } else {
@@ -309,7 +305,8 @@ public class StateMachine extends SubsystemBase {
     if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION)) {
       elevatorSubsystem.setPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION);
     }
-    final boolean inside = GeometryUtil.pointInPolygon(polygonToUse, drive.getPose().getTranslation());
+    final boolean inside =
+        GeometryUtil.pointInPolygon(polygonToUse, drive.getState().Pose.getTranslation());
     if (!algaeWristSubsystem.isAtDownPosition() && !inside) {
       algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.DOWN_POSITION);
     } else {

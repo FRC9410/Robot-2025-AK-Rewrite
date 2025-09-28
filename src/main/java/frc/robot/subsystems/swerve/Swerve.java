@@ -8,6 +8,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -50,6 +51,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
       new SwerveRequest.SysIdSwerveSteerGains();
   private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization =
       new SwerveRequest.SysIdSwerveRotation();
+
+  private final PhoenixPIDController HEADING_CONTROLLER = new PhoenixPIDController(7, 0, 0);
 
   public double MAX_SPEED = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
   public double MAX_ANGULAR_RATE =
@@ -148,6 +151,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    DRIVE_AT_ANGLE.HeadingController = HEADING_CONTROLLER;
+    DRIVE_AT_ANGLE.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
     configureAutoBuilder();
   }
 
@@ -170,6 +175,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    DRIVE_AT_ANGLE.HeadingController = HEADING_CONTROLLER;
+    DRIVE_AT_ANGLE.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
     configureAutoBuilder();
   }
 
@@ -203,6 +210,8 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    DRIVE_AT_ANGLE.HeadingController = HEADING_CONTROLLER;
+    DRIVE_AT_ANGLE.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
     configureAutoBuilder();
   }
 
