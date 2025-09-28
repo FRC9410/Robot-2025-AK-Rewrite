@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -202,6 +203,24 @@ public final class Constants {
     public static final double START_VOLTAGE = 3.5;
     public static final double STOP_VOLTAGE = 0.0;
   }
+
+  public static final List<Translation2d> bluePolygon = List.of(
+  new Translation2d(3, 3.2),
+  new Translation2d(4.5, 2.35),
+  new Translation2d(6, 3.2),
+  new Translation2d(6, 4.85),
+  new Translation2d(4.5, 5.65),
+  new Translation2d(3, 4.85)
+  );
+
+  public static final List<Translation2d> redPolygon = List.of(
+    new Translation2d(11.6, 3.2),
+    new Translation2d(13.05, 2.35),
+    new Translation2d(14.55, 3.2),
+    new Translation2d(14.55, 4.85),
+    new Translation2d(13.05, 5.65),
+    new Translation2d(11.6, 4.85)
+  );
 
   public static final class ScoringConstants {
     // Red Side

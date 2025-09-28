@@ -88,7 +88,8 @@ public class RobotContainer {
             sensorsSubsystem,
             elevatorSubsystem,
             endEffectorSubsystem,
-            climberSubsystem);
+            climberSubsystem,
+            robotContainer);
 
     switch (Constants.currentMode) {
       case REAL:

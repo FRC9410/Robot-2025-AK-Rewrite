@@ -4,8 +4,17 @@
 
 package frc.robot.subsystems;
 
+import java.util.List;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.*;
 
 public class StateMachine extends SubsystemBase {
   HopperSubsystem hopperSubsystem;
@@ -15,6 +24,8 @@ public class StateMachine extends SubsystemBase {
   ElevatorSubsystem elevatorSubsystem;
   EndEffectorSubsystem endEffectorSubsystem;
   ClimberSubsystem climberSubsystem;
+  RobotContainer robotContainer;
+  Drive drive;
   // Dashboard dashboard;
 
   public StateMachine(
@@ -24,7 +35,8 @@ public class StateMachine extends SubsystemBase {
       SensorsSubsystem sensorsSubsystem,
       ElevatorSubsystem elevatorSubsystem,
       EndEffectorSubsystem endEffectorSubsystem,
-      ClimberSubsystem climberSubsystem) {
+      ClimberSubsystem climberSubsystem,
+      RobotContainer robotContainer) {
     this.hopperSubsystem = hopper;
     this.algaeWristSubsystem = algaeWrist;
     this.algaeIntakeSubsystem = algaeIntake;
@@ -32,6 +44,8 @@ public class StateMachine extends SubsystemBase {
     this.elevatorSubsystem = elevatorSubsystem;
     this.endEffectorSubsystem = endEffectorSubsystem;
     this.climberSubsystem = climberSubsystem;
+    this.robotContainer = robotContainer;
+    this.drive = robotContainer.getDrive();
   }
 
   RobotState INIT_STATE = RobotState.READY_STATE;
@@ -89,9 +103,16 @@ public class StateMachine extends SubsystemBase {
   }
 
   private void handleRobotStateTransitions() {
+    boolean isBlueAlliance = true;
+    if (DriverStation.getAlliance().isPresent()) {
+      if (DriverStation.getAlliance().get() == Alliance.Red) {
+        isBlueAlliance = false;
+      }
+    }
+
     if (this.currentRobotState != this.wantedRobotState) {
       this.currentRobotState = READY_STATE;
-      if (true) { // isReadyState()) {
+      if (true) { // isReadyState()) ????? Works fine without it? -aidan. 
         this.currentRobotState = this.wantedRobotState;
       }
     }
@@ -112,10 +133,10 @@ public class StateMachine extends SubsystemBase {
         executeScoreCoral(selectedCoralPosition);
         break;
       case DESCORE_ALGAE_LOWER:
-        removeAlgaeLower();
+        removeAlgaeLower(isBlueAlliance);
         break;
       case DESCORE_ALGAE_UPPER:
-        removeAlgaeUpper();
+        removeAlgaeUpper(isBlueAlliance);
         break;
     }
   }
@@ -194,7 +215,6 @@ public class StateMachine extends SubsystemBase {
 
   private void executeScoreCoral(CoralPositions coralPosition) {
     double elevatorPosition;
-    double xOffset; // I'm not sure if this is right but just to get the idea
     switch (coralPosition) {
       case LEFT_L1:
         elevatorPosition = Constants.ElevatorConstants.L1_SCORE_POSITION;
@@ -253,25 +273,49 @@ public class StateMachine extends SubsystemBase {
     wantedRobotState = state;
   }
 
-  public void removeAlgaeUpper() {
+  public void removeAlgaeUpper(Boolean isBlueAlliance) {
+    List<Translation2d> polygonToUse = null;
+    if (isBlueAlliance) {
+      polygonToUse = Constants.bluePolygon;
+    } else {
+      polygonToUse = Constants.redPolygon;
+    }
+
     if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L2_ALGAE_POSITION)) {
       System.out.println("Moving to L1 algae position");
       elevatorSubsystem.setPosition(Constants.ElevatorConstants.L2_ALGAE_POSITION);
     }
-    if (!algaeWristSubsystem.isAtDownPosition()) {
+    final boolean inside = GeometryUtil.pointInPolygon(polygonToUse, drive.getPose().getTranslation());
+    if (!algaeWristSubsystem.isAtDownPosition() && !inside) {
       algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.DOWN_POSITION);
+    } else {
+      if (!algaeWristSubsystem.isAtHomePosition() && inside) {
+        algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.UP_POSITION);
+      }
     }
     if (!algaeIntakeSubsystem.isRunning()) {
       algaeIntakeSubsystem.outtakeAlgae();
     }
   }
 
-  public void removeAlgaeLower() {
+  public void removeAlgaeLower(boolean isBlueAlliance) {
+    List<Translation2d> polygonToUse = null;
+    if (isBlueAlliance) {
+      polygonToUse = Constants.bluePolygon;
+    } else {
+      polygonToUse = Constants.redPolygon;
+    }
+
     if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION)) {
       elevatorSubsystem.setPosition(Constants.ElevatorConstants.L1_ALGAE_POSITION);
     }
-    if (!algaeWristSubsystem.isAtDownPosition()) {
+    final boolean inside = GeometryUtil.pointInPolygon(polygonToUse, drive.getPose().getTranslation());
+    if (!algaeWristSubsystem.isAtDownPosition() && !inside) {
       algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.DOWN_POSITION);
+    } else {
+      if (!algaeWristSubsystem.isAtHomePosition() && inside) {
+        algaeWristSubsystem.setPosition(Constants.AlgaeWristConstants.UP_POSITION);
+      }
     }
     if (!algaeIntakeSubsystem.isRunning()) {
       algaeIntakeSubsystem.outtakeAlgae();

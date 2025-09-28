@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.StateMachine;
 import frc.robot.subsystems.StateMachine.CoralPositions;
@@ -129,6 +130,14 @@ public class SwerveDriveCommand extends Command {
 
   private Pose2d getTargetPose(
       Pose2d currentPose, RobotState robotState, CoralPositions coralPosition) {
+    
+    boolean isBlueAlliance = true;
+    if (DriverStation.getAlliance().isPresent()) {
+      if (DriverStation.getAlliance().get() == Alliance.Red) {
+        isBlueAlliance = false;
+      }
+    }
+    
     List<CoralPositions> leftPositions =
         Arrays.asList(
             CoralPositions.LEFT_L1,
@@ -149,7 +158,83 @@ public class SwerveDriveCommand extends Command {
             ? "right"
             : leftPositions.contains(coralPosition) ? "left" : "";
 
-            
+    List<Pose2d> redLeftScoringPoints = Arrays.asList(
+        Constants.ScoringConstants.RED_FRONT_LEFT,
+        Constants.ScoringConstants.RED_FRONT_LEFT_LEFT,
+        Constants.ScoringConstants.RED_BACK_LEFT_LEFT,
+        Constants.ScoringConstants.RED_BACK_LEFT,
+        Constants.ScoringConstants.RED_BACK_RIGHT_LEFT,
+        Constants.ScoringConstants.RED_FRONT_RIGHT_LEFT
+    );
+
+    List<Pose2d> redRightScoringPoints = Arrays.asList(
+        Constants.ScoringConstants.RED_FRONT_RIGHT,
+        Constants.ScoringConstants.RED_FRONT_LEFT_RIGHT,
+        Constants.ScoringConstants.RED_BACK_LEFT_RIGHT,
+        Constants.ScoringConstants.RED_BACK_RIGHT,
+        Constants.ScoringConstants.RED_BACK_RIGHT_RIGHT,
+        Constants.ScoringConstants.RED_FRONT_RIGHT_RIGHT
+    );
+
+    List<Pose2d> blueLeftScoringPoints = Arrays.asList(
+        Constants.ScoringConstants.BLUE_FRONT_LEFT,
+        Constants.ScoringConstants.BLUE_FRONT_LEFT_LEFT,
+        Constants.ScoringConstants.BLUE_BACK_LEFT_LEFT,
+        Constants.ScoringConstants.BLUE_BACK_LEFT,
+        Constants.ScoringConstants.BLUE_BACK_RIGHT_LEFT,
+        Constants.ScoringConstants.BLUE_FRONT_RIGHT_LEFT
+    );
+
+    List<Pose2d> blueRightScoringPoints = Arrays.asList(
+        Constants.ScoringConstants.BLUE_FRONT_RIGHT,
+        Constants.ScoringConstants.BLUE_FRONT_LEFT_RIGHT,
+        Constants.ScoringConstants.BLUE_BACK_LEFT_RIGHT,
+        Constants.ScoringConstants.BLUE_BACK_RIGHT,
+        Constants.ScoringConstants.BLUE_BACK_RIGHT_RIGHT,
+        Constants.ScoringConstants.BLUE_FRONT_RIGHT_RIGHT
+    );
+
+    List<Pose2d> scoringLocations = null;
+    if (isBlueAlliance) {
+      switch (coralPosition) {
+        case LEFT_L1, LEFT_L2, LEFT_L3, LEFT_L4:
+          scoringLocations = blueLeftScoringPoints;
+          break;
+        case RIGHT_L1, RIGHT_L2, RIGHT_L3, RIGHT_L4:
+          scoringLocations = blueRightScoringPoints;
+          break;
+        default:
+          return null;
+      }
+    } else {
+        switch (coralPosition) {
+          case LEFT_L1, LEFT_L2, LEFT_L3, LEFT_L4:
+            scoringLocations = redLeftScoringPoints;
+            break;
+          case RIGHT_L1, RIGHT_L2, RIGHT_L3, RIGHT_L4:
+            scoringLocations = redRightScoringPoints;
+            break;
+          default:
+            return null;
+        }
+    }
+
+    double leastDistance= 0;
+    double indexOfClosestPoint;
+
+    for (int i = 0; i < 4; i++) {
+      Pose2d testPoint = scoringLocations.get(i);
+      Translation2d distanceTranslation = currentPose.getTranslation().minus(testPoint.getTranslation());
+      double distance = distanceTranslation.getNorm();
+
+      if (i == 0 || distance < leastDistance) {
+        leastDistance = distance;
+        indexOfClosestPoint = i;
+        targetPose = testPoint;
+      }
+    }
+
+
     //fill in left and right for blue from constants
     //List<Pose2d> redLeftScoringPoints = Arrays.asList()
 
