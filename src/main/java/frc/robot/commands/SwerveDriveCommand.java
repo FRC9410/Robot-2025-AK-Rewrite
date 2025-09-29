@@ -58,8 +58,8 @@ public class SwerveDriveCommand extends Command {
     this.stateMachine = stateMachine;
     this.autoDrive = autoDrive;
     this.STATIC_FRICTION_CONSTANT =
-        0.170; // Adjust this value based on your robot's characteristics
-    this.driveToPointController = new PIDController(2.5, 0, 0.1);
+        0.020; // Adjust this value based on your robot's characteristics
+    this.driveToPointController = new PIDController(3.5, 0, 0.1);
 
     addRequirements(drivetrain);
     // Use addRequirements() here to declare subsystem dependencies.
@@ -98,7 +98,7 @@ public class SwerveDriveCommand extends Command {
       final double linearDistance = translationToPoint.getNorm();
       double ff = 0;
       if (linearDistance >= Units.inchesToMeters(0.5)) {
-        ff = STATIC_FRICTION_CONSTANT * drivetrain.MAX_DRIVE_TO_POINT_ANGULAR_RATE;
+        ff = STATIC_FRICTION_CONSTANT * MAX_SPEED;
       }
 
       final Rotation2d directionOfTravel = translationToPoint.getAngle();
