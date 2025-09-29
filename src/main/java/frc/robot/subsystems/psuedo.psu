@@ -244,6 +244,34 @@ boolean inside = GeometryUtil.pointInPolygon(polygon, robot);
 
 
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
+
+public class AccelOnlyLimiter {
+  // units per second (e.g., joystick [-1..1] per second)
+  private final SlewRateLimiter magLimiter =
+      new SlewRateLimiter( /*positive*/ 2.0, /*negative*/ Double.POSITIVE_INFINITY );
+
+  /** Limit acceleration only. Decreases toward 0 are unbounded. */
+  public double calculate(double input) {
+    double sign = Math.signum(input);
+    double limitedMag = magLimiter.calculate(Math.abs(input));
+    return sign * limitedMag;
+  }
+
+  /** If you need to “snap” to a new state (e.g., when enabling). */
+  public void reset(double currentCommand) {
+    magLimiter.reset(Math.abs(currentCommand));
+  }
+}
+
+
+double throttle = -controller.getLeftY(); // [-1..1]
+double accelOnlyThrottle = accelLimiter.calculate(throttle);
+drive.arcadeDrive(accelOnlyThrottle, turn);
+
+
+
+
 
 
     
