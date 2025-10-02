@@ -2,7 +2,10 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.Utils;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -19,7 +22,9 @@ import frc.robot.subsystems.EndEffectorSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.SensorsSubsystem;
 import frc.robot.subsystems.StateMachine;
+import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.swerve.Swerve;
+import frc.robot.util.LimelightHelpers;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -41,6 +46,7 @@ public class RobotContainer {
   private final ElevatorSubsystem elevatorSubsystem;
   private final EndEffectorSubsystem endEffectorSubsystem;
   private final ClimberSubsystem climberSubsystem;
+  private final Vision vision;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -61,6 +67,7 @@ public class RobotContainer {
     endEffectorSubsystem = new EndEffectorSubsystem();
     climberSubsystem = new ClimberSubsystem();
     drive = TunerConstants.createDrivetrain();
+    vision = new Vision();
 
     drive.resetPose(new Pose2d());
 
@@ -150,6 +157,44 @@ public class RobotContainer {
     drive.registerTelemetry(logger::telemeterize);
   }
 
+  public void updatePose() {
+    final String bestLimelight = vision.getBestLimelight();
+
+    if (bestLimelight.isEmpty()) {
+      return;
+    }
+
+    Pose3d pose = LimelightHelpers.getBotPose3d_wpiBlue(bestLimelight);
+    LimelightHelpers.PoseEstimate bestMeasurement =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue(bestLimelight);
+
+    if (bestMeasurement != null && bestMeasurement.avgTagArea > 0.1) {
+      Pose2d newPose = pose.toPose2d();
+      drive.resetRotation(newPose.getRotation());
+      LimelightHelpers.SetRobotOrientation(
+          "limelight-left", newPose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+      LimelightHelpers.SetRobotOrientation(
+          "limelight-right", newPose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+    } else {
+      return;
+    }
+
+    LimelightHelpers.PoseEstimate mt2 =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(bestLimelight);
+    // table.getEntry("tag-count").setDouble(mt2.tagCount);
+    // table.getEntry("angular-velo").setBoolean(Math.abs(subsystems.getDrivetrain().getPigeon2().getRate()) < 720);
+
+    if (mt2 != null
+        && drive.getPigeon2().getRate() < 720
+        && mt2.tagCount
+            > 0) // if our angular velocity is greater than 720 degrees per second, ignore vision
+    // updates
+    {
+      drive.resetPose(mt2.pose);
+      drive.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
+      drive.addVisionMeasurement(mt2.pose, Utils.fpgaToCurrentTime(mt2.timestampSeconds));
+    }
+  }
   /**
    * Use this method to define your button->command mappings. Buttons can be created by
    * instantiating a {@link GenericHID} or one of its subclasses ({@link

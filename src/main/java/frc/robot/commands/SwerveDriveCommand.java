@@ -58,8 +58,8 @@ public class SwerveDriveCommand extends Command {
     this.stateMachine = stateMachine;
     this.autoDrive = autoDrive;
     this.STATIC_FRICTION_CONSTANT =
-        0.020; // Adjust this value based on your robot's characteristics
-    this.driveToPointController = new PIDController(3.5, 0, 0.1);
+        0.085; // Adjust this value based on your robot's characteristics
+    this.driveToPointController = new PIDController(4.05, 0, 0.1);
 
     addRequirements(drivetrain);
     // Use addRequirements() here to declare subsystem dependencies.
@@ -77,19 +77,20 @@ public class SwerveDriveCommand extends Command {
     Pose2d targetPose = null;
 
     if (currentPose != null) {
-      if (controller.a().getAsBoolean()) {
-        targetPose = Constants.AutoConstants.TEST_POSITION;
-      } else if (controller.y().getAsBoolean()) {
-        targetPose = new Pose2d();
-      } else if (controller.x().getAsBoolean()) {
-        targetPose = Constants.AutoConstants.TEST_POSITION2;
-      } else if (controller.b().getAsBoolean()) {
-        targetPose = Constants.AutoConstants.TEST_POSITION3;
-      }
-      // getTargetPose(
-      //     currentPose,
-      //     stateMachine.getCurrentRobotState(),
-      //     stateMachine.getCurrentCoralPosition());
+      // if (controller.a().getAsBoolean()) {
+      //   targetPose = Constants.AutoConstants.TEST_POSITION;
+      // } else if (controller.y().getAsBoolean()) {
+      //   targetPose = new Pose2d();
+      // } else if (controller.x().getAsBoolean()) {
+      //   targetPose = Constants.AutoConstants.TEST_POSITION2;
+      // } else if (controller.b().getAsBoolean()) {
+      //   targetPose = Constants.AutoConstants.TEST_POSITION3;
+      // }
+      targetPose =
+          getTargetPose(
+              currentPose,
+              stateMachine.getCurrentRobotState(),
+              stateMachine.getCurrentCoralPosition());
     }
 
     if (currentPose != null && targetPose != null && autoDrive) {
@@ -116,9 +117,9 @@ public class SwerveDriveCommand extends Command {
       drivetrain.drive(
           speeds.vxMetersPerSecond,
           speeds.vyMetersPerSecond,
-          currentPose.getRotation().getDegrees(),
-          // targetPose.getRotation().getDegrees(),
-          Swerve.DriveMode.DRIVE_TO_POINT);
+          // currentPose.getRotation().getDegrees(),
+          targetPose.getRotation().getDegrees(),
+          Swerve.DriveMode.ROTATION_LOCK);
     } else {
       final ChassisSpeeds speeds = calculateSpeedsBasedOnJoystickInputs();
       drivetrain.drive(
@@ -237,7 +238,8 @@ public class SwerveDriveCommand extends Command {
       Pose2d testPoint = scoringLocations.get(i);
       Translation2d distanceTranslation =
           currentPose.getTranslation().minus(testPoint.getTranslation());
-      double distance = distanceTranslation.getNorm();
+      double distance = Math.abs(distanceTranslation.getNorm());
+      System.out.println(distance);
 
       if (i == 0 || distance < leastDistance) {
         leastDistance = distance;

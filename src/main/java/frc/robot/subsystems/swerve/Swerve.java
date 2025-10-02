@@ -281,17 +281,17 @@ public class Swerve extends TunerSwerveDrivetrain implements Subsystem {
      * Otherwise, only check and apply the operator perspective if the DS is disabled.
      * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
      */
-    // if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
-    //   DriverStation.getAlliance()
-    //       .ifPresent(
-    //           allianceColor -> {
-    //             setOperatorPerspectiveForward(
-    //                 allianceColor == Alliance.Red
-    //                     ? kRedAlliancePerspectiveRotation
-    //                     : kBlueAlliancePerspectiveRotation);
-    //             m_hasAppliedOperatorPerspective = true;
-    //           });
-    // }
+    if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+      DriverStation.getAlliance()
+          .ifPresent(
+              allianceColor -> {
+                setOperatorPerspectiveForward(
+                    allianceColor == Alliance.Red
+                        ? kRedAlliancePerspectiveRotation
+                        : kBlueAlliancePerspectiveRotation);
+                m_hasAppliedOperatorPerspective = true;
+              });
+    }
   }
 
   private void startSimThread() {
