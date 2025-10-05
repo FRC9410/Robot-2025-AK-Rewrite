@@ -207,13 +207,13 @@ public class RobotContainer {
 
     controller.a().whileTrue(new SwerveDriveCommand(drive, controller, stateMachine, true));
     controller.a().onFalse(new SwerveDriveCommand(drive, controller, stateMachine, false));
-    controller.y().whileTrue(new SwerveDriveCommand(drive, controller, stateMachine, true));
-    controller.y().onFalse(new SwerveDriveCommand(drive, controller, stateMachine, false));
+    // controller.y().whileTrue(new SwerveDriveCommand(drive, controller, stateMachine, true));
+    // controller.y().onFalse(new SwerveDriveCommand(drive, controller, stateMachine, false));
 
-    controller.x().whileTrue(new SwerveDriveCommand(drive, controller, stateMachine, true));
-    controller.x().onFalse(new SwerveDriveCommand(drive, controller, stateMachine, false));
-    controller.b().whileTrue(new SwerveDriveCommand(drive, controller, stateMachine, true));
-    controller.b().onFalse(new SwerveDriveCommand(drive, controller, stateMachine, false));
+    // controller.x().whileTrue(new SwerveDriveCommand(drive, controller, stateMachine, true));
+    // controller.x().onFalse(new SwerveDriveCommand(drive, controller, stateMachine, false));
+    // controller.b().whileTrue(new SwerveDriveCommand(drive, controller, stateMachine, true));
+    // controller.b().onFalse(new SwerveDriveCommand(drive, controller, stateMachine, false));
 
     // Lock to 0° when A button is held
     // controller

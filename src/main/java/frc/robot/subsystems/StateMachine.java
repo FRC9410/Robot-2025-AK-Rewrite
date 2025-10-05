@@ -20,6 +20,7 @@ public class StateMachine extends SubsystemBase {
   SensorsSubsystem sensorsSubsystem;
   ElevatorSubsystem elevatorSubsystem;
   EndEffectorSubsystem endEffectorSubsystem;
+  Boolean isInPosition;
   ClimberSubsystem climberSubsystem;
   Swerve drive;
   // Dashboard dashboard;
@@ -95,6 +96,19 @@ public class StateMachine extends SubsystemBase {
   @Override
   public void periodic() {
     handleRobotStateTransitions();
+    if (!sensorsSubsystem.hasPiece()) { // if no piece
+      if (sensorsSubsystem.isIntakeLaserBroken()) { // if intake beam broken
+        if (!endEffectorMotorsRunning) { // turn on end effector
+          endEffectorSubsystem.intakeCoral();
+          endEffectorMotorsRunning = true;
+        }
+      } else { // if intake beam is not broken
+        if (endEffectorMotorsRunning) { // stop end effector
+          endEffectorSubsystem.stopMotors();
+          endEffectorMotorsRunning = false;
+        }
+      }
+    }
   }
 
   private void handleRobotStateTransitions() {
@@ -112,8 +126,6 @@ public class StateMachine extends SubsystemBase {
       }
     }
 
-    System.out.println(currentRobotState.toString());
-    System.out.println(selectedCoralPosition.toString());
     switch (this.currentRobotState) {
       case READY_STATE:
         executeReadyState();
@@ -160,7 +172,7 @@ public class StateMachine extends SubsystemBase {
       hopperMotorsRunning = false;
     }
     if (endEffectorMotorsRunning) { // stop end effector motors
-      endEffectorSubsystem.setVelocity(0);
+      endEffectorSubsystem.stopMotors();
       endEffectorMotorsRunning = false;
     }
     if (!elevatorSubsystem.isAtPosition(
@@ -190,12 +202,12 @@ public class StateMachine extends SubsystemBase {
       }
       if (sensorsSubsystem.isIntakeLaserBroken()) { // if intake beam broken
         if (!endEffectorMotorsRunning) { // turn on end effector
-          endEffectorSubsystem.setVelocity(7);
+          endEffectorSubsystem.intakeCoral();
           endEffectorMotorsRunning = true;
         }
       } else { // if intake beam is not broken
         if (endEffectorMotorsRunning) { // stop end effector
-          endEffectorSubsystem.setVelocity(0);
+          endEffectorSubsystem.stopMotors();
           endEffectorMotorsRunning = false;
         }
       }
@@ -239,28 +251,27 @@ public class StateMachine extends SubsystemBase {
         elevatorPosition = Constants.ElevatorConstants.HOME_POSITION;
         break;
     }
-
     if (sensorsSubsystem.hasPiece()) {
-      System.out.println("Has piece");
-      // need to implement position logic here
-      if (!elevatorSubsystem.isAtPosition(
-          elevatorPosition)) { // move elevator to height if its not already there
-        elevatorSubsystem.setPosition(elevatorPosition);
-      } else { // if elevator is at height, outtake coral
-        endEffectorSubsystem.outtakeCoral();
+      if (isInPosition) {
+
+        // need to implement position logic here
+
+        if (!elevatorSubsystem.isAtPosition(
+            elevatorPosition)) { // move elevator to height if its not already there
+          elevatorSubsystem.setPosition(elevatorPosition);
+        } else { // if elevator is at height, outtake coral
+          endEffectorSubsystem.outtakeCoral();
+        }
       }
     } else { // No piece, intake coral instead.
-      System.out.println("Doesn't have piece");
       if (!elevatorSubsystem.isAtPosition(
           Constants.ElevatorConstants.HOME_POSITION)) { // if no piece and elevator not home
         elevatorSubsystem.setPosition(
             Constants.ElevatorConstants.HOME_POSITION); // move elevator to home
         endEffectorSubsystem.setVoltage(
             Constants.EndEffectorConstants.STOP_VOLTAGE); // turn off end effector
-        System.out.println("True");
       }
       setWantedState(RobotState.INTAKE_CORAL);
-      System.out.println("False");
     }
   }
 
@@ -277,7 +288,6 @@ public class StateMachine extends SubsystemBase {
     }
 
     if (!elevatorSubsystem.isAtPosition(Constants.ElevatorConstants.L2_ALGAE_POSITION)) {
-      System.out.println("Moving to L1 algae position");
       elevatorSubsystem.setPosition(Constants.ElevatorConstants.L2_ALGAE_POSITION);
     }
     final boolean inside =
@@ -334,5 +344,9 @@ public class StateMachine extends SubsystemBase {
 
   public CoralPositions getCurrentCoralPosition() {
     return selectedCoralPosition;
+  }
+
+  public void setIsInPosition(boolean isInPosition) {
+    this.isInPosition = isInPosition;
   }
 }

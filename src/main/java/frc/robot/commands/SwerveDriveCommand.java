@@ -29,6 +29,7 @@ import java.util.List;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class SwerveDriveCommand extends Command {
   public double MAX_SPEED = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+  public double CLOSE_SPEED = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) / 4;
   public double MAX_ANGULAR_RATE =
       RotationsPerSecond.of(0.75)
           .in(RadiansPerSecond); // 0.75 rotations per second in radians per second unit
@@ -37,6 +38,8 @@ public class SwerveDriveCommand extends Command {
           .in(RadiansPerSecond); // 0.75 rotations per second in radians per second unit
   public double MAX_DRIVE_TO_POINT_SPEED =
       TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.75;
+  public double SLOW_DRIVE_TO_POINT_SPEED =
+      TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.75 / 4;
   public double SKEW_COMPENSATION =
       0. - 0.03; // Adjust this value based on your robot's characteristics
 
@@ -59,7 +62,7 @@ public class SwerveDriveCommand extends Command {
     this.autoDrive = autoDrive;
     this.STATIC_FRICTION_CONSTANT =
         0.085; // Adjust this value based on your robot's characteristics
-    this.driveToPointController = new PIDController(4.05, 0, 0.1);
+    this.driveToPointController = new PIDController(3.2, 0, 0.2);
 
     addRequirements(drivetrain);
     // Use addRequirements() here to declare subsystem dependencies.
@@ -72,7 +75,6 @@ public class SwerveDriveCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    System.out.println(STATIC_FRICTION_CONSTANT * drivetrain.MAX_DRIVE_TO_POINT_ANGULAR_RATE);
     final Pose2d currentPose = drivetrain.getState().Pose;
     Pose2d targetPose = null;
 
@@ -93,6 +95,11 @@ public class SwerveDriveCommand extends Command {
               stateMachine.getCurrentCoralPosition());
     }
 
+    if (currentPose == null || targetPose == null) stateMachine.setIsInPosition(false);
+    else
+      stateMachine.setIsInPosition(
+          getIsInPosition(currentPose, targetPose, drivetrain.getState().Speeds));
+
     if (currentPose != null && targetPose != null && autoDrive) {
       final Translation2d translationToPoint =
           currentPose.getTranslation().minus(targetPose.getTranslation());
@@ -102,17 +109,18 @@ public class SwerveDriveCommand extends Command {
         ff = STATIC_FRICTION_CONSTANT * MAX_SPEED;
       }
 
+      double maxSpeed =
+          isClose(currentPose, targetPose) ? SLOW_DRIVE_TO_POINT_SPEED : MAX_DRIVE_TO_POINT_SPEED;
+
       final Rotation2d directionOfTravel = translationToPoint.getAngle();
       final double velocity =
-          Math.min(
-              Math.abs(driveToPointController.calculate(linearDistance, 0)) + ff,
-              MAX_DRIVE_TO_POINT_SPEED);
+          Math.min(Math.abs(driveToPointController.calculate(linearDistance, 0)) + ff, maxSpeed);
       final double xSpeed = velocity * directionOfTravel.getCos();
       final double ySpeed = velocity * directionOfTravel.getSin();
 
       drivetrain.drive(
-          xSpeed, ySpeed, targetPose.getRotation().getDegrees(), Swerve.DriveMode.DRIVE_TO_POINT);
-    } else if (currentPose != null && targetPose != null) {
+          -xSpeed, -ySpeed, targetPose.getRotation().getDegrees(), Swerve.DriveMode.DRIVE_TO_POINT);
+    } else if (currentPose != null && targetPose != null && isClose(currentPose, targetPose)) {
       final ChassisSpeeds speeds = calculateSpeedsBasedOnJoystickInputs();
       drivetrain.drive(
           speeds.vxMetersPerSecond,
@@ -125,7 +133,7 @@ public class SwerveDriveCommand extends Command {
       drivetrain.drive(
           speeds.vxMetersPerSecond,
           speeds.vyMetersPerSecond,
-          speeds.omegaRadiansPerSecond,
+          -speeds.omegaRadiansPerSecond,
           Swerve.DriveMode.FIELD_RELATIVE);
     }
   }
@@ -234,12 +242,11 @@ public class SwerveDriveCommand extends Command {
     double leastDistance = 0;
     double indexOfClosestPoint;
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < scoringLocations.size(); i++) {
       Pose2d testPoint = scoringLocations.get(i);
       Translation2d distanceTranslation =
           currentPose.getTranslation().minus(testPoint.getTranslation());
       double distance = Math.abs(distanceTranslation.getNorm());
-      System.out.println(distance);
 
       if (i == 0 || distance < leastDistance) {
         leastDistance = distance;
@@ -278,6 +285,21 @@ public class SwerveDriveCommand extends Command {
     return targetPose;
   }
 
+  private boolean isClose(Pose2d currentPose, Pose2d targetPose) {
+    final Translation2d translationToPoint =
+        currentPose.getTranslation().minus(targetPose.getTranslation());
+    final double linearDistance = translationToPoint.getNorm();
+    return linearDistance < 1; // meters
+  }
+
+  private boolean getIsInPosition(Pose2d currentPose, Pose2d targetPose, ChassisSpeeds speeds) {
+    final Translation2d translationToPoint =
+        currentPose.getTranslation().minus(targetPose.getTranslation());
+    final double linearDistance = translationToPoint.getNorm();
+    final double currentVelocity = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+    return linearDistance < Units.inchesToMeters(1) && currentVelocity < 0.01; // meters
+  }
+
   private ChassisSpeeds calculateSpeedsBasedOnJoystickInputs() {
     boolean isBlueAlliance = true;
     final Pose2d currentPose = drivetrain.getState().Pose;
@@ -292,9 +314,12 @@ public class SwerveDriveCommand extends Command {
       }
     }
 
-    final double xMagnitude = MathUtil.applyDeadband(controller.getLeftY(), 0.1);
-    final double yMagnitude = MathUtil.applyDeadband(controller.getLeftX(), 0.1);
+    double xMagnitude = MathUtil.applyDeadband(controller.getLeftY(), 0.1);
+    double yMagnitude = MathUtil.applyDeadband(controller.getLeftX(), 0.1);
     double angularMagnitude = MathUtil.applyDeadband(controller.getRightX(), 0.1);
+
+    xMagnitude = Math.copySign(xMagnitude * xMagnitude, xMagnitude);
+    yMagnitude = Math.copySign(yMagnitude * yMagnitude, yMagnitude);
 
     angularMagnitude = Math.copySign(angularMagnitude * angularMagnitude, angularMagnitude);
 

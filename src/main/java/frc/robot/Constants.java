@@ -173,12 +173,16 @@ public final class Constants {
     public static final double kG = 0.34;
     public static final double MOTION_MAGIC_ACCELERATION = 400.0;
     public static final double MOTION_MAGIC_VELOCITY = 200.0;
+    public static final double SLOW_MOTION_MAGIC_ACCELERATION = 200.0;
+    public static final double SLOW_MOTION_MAGIC_VELOCITY = 100.0;
+
+    public static final double bufferThreshold = 25;
 
     // Elevator preset heights (in units; placeholders for L1-L4, home, algae layup, and algae
     // place)
     public static final double HOME_POSITION = 0.25;
     public static final double L1_SCORE_POSITION = 30.0;
-    public static final double L2_SCORE_POSITION = 23.5;
+    public static final double L2_SCORE_POSITION = 24.5;
     public static final double L3_SCORE_POSITION = 36.5;
     public static final double L4_SCORE_POSITION = 55.75;
     public static final double ALGAE_LAYUP_POSITIONS = 0.6;
@@ -239,9 +243,9 @@ public final class Constants {
         new Pose2d(13.852, 2.985, Rotation2d.fromDegrees(-60.0));
 
     public static final Pose2d RED_FRONT_RIGHT_LEFT =
-        new Pose2d(13.852, 5.065, Rotation2d.fromDegrees(-60.0));
+        new Pose2d(13.852, 5.065, Rotation2d.fromDegrees(60.0));
     public static final Pose2d RED_FRONT_RIGHT_RIGHT =
-        new Pose2d(13.569, 5.228, Rotation2d.fromDegrees(-60.0));
+        new Pose2d(13.569, 5.228, Rotation2d.fromDegrees(60.0));
 
     public static final Pose2d RED_BACK_LEFT =
         new Pose2d(11.767, 4.191, Rotation2d.fromDegrees(180.0));

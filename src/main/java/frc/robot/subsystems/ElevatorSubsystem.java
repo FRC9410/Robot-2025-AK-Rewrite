@@ -19,6 +19,11 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final MotionMagicVoltage motionMagicRequest;
   private double voltage;
   private double setpoint;
+  private String speed;
+  private String direction;
+
+  private final MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+  private final MotionMagicConfigs slowMotionMagicConfigs = new MotionMagicConfigs();
 
   public ElevatorSubsystem() {
     // Create the position request for closed-loop control
@@ -27,11 +32,14 @@ public class ElevatorSubsystem extends SubsystemBase {
     // Configure the Kraken
     TalonFXConfiguration config = new TalonFXConfiguration();
     TalonFXConfiguration followerConfig = new TalonFXConfiguration();
-    MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
 
     motionMagicConfigs
         .withMotionMagicCruiseVelocity(Constants.ElevatorConstants.MOTION_MAGIC_VELOCITY)
         .withMotionMagicAcceleration(Constants.ElevatorConstants.MOTION_MAGIC_ACCELERATION);
+
+    slowMotionMagicConfigs
+        .withMotionMagicCruiseVelocity(Constants.ElevatorConstants.SLOW_MOTION_MAGIC_VELOCITY)
+        .withMotionMagicAcceleration(Constants.ElevatorConstants.SLOW_MOTION_MAGIC_ACCELERATION);
 
     // Configure PID
     config.Slot0.kP = Constants.ElevatorConstants.kP;
@@ -49,7 +57,6 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     // Apply configuration
     elevatorMotor.getConfigurator().apply(config);
-    elevatorMotor.getConfigurator().apply(motionMagicConfigs);
     elevatorFollowerMotor.getConfigurator().apply(followerConfig);
     elevatorMotor.setPosition(0);
 
@@ -65,13 +72,33 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {}
+  public void periodic() {
+    setConfig(setpoint);
+  }
 
   public void setPosition(double position) {
     if (position != setpoint) {
       setpoint = position;
       elevatorMotor.setControl(motionMagicRequest.withPosition(position).withSlot(0));
     }
+  }
+
+  public void setConfig(double position) {
+    if (position <= getCurrentHeight())
+      if (getCurrentHeight()
+          < Constants.ElevatorConstants
+              .bufferThreshold) // && speed != "SLOW" && direction != "DOWN"
+        // speed = "SLOW"
+        // direction = "DOWN"
+        elevatorMotor.getConfigurator().apply(slowMotionMagicConfigs);
+      else // if getCurrentHeight() > k && speed != "FAST" && direction != "DOWN"
+        // speed = "FAST"
+        // direction = "DOWN"
+        elevatorMotor.getConfigurator().apply(slowMotionMagicConfigs);
+    else // if direction != "UP"
+      // direction = "UP"
+      // speed = "FAST"
+      elevatorMotor.getConfigurator().apply(motionMagicConfigs);
   }
 
   /**
