@@ -350,20 +350,16 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     Auto selectedAuto = dashboard.getAutoFromDash();
-    // drive.resetPose(new Pose2d(10.879, 2.242, Rotation2d.fromDegrees(0.0)));
-    // drive.resetPose(new Pose2d(10.879, 5.779, Rotation2d.fromDegrees(180.0)));
-    drive.resetPose(new Pose2d(6.4, 5.779, Rotation2d.fromDegrees(180.0)));
-    // drive.resetPose(new Pose2d(6.4, 2.242, Rotation2d.fromDegrees(180.0)));
 
     switch (selectedAuto) {
       case RED_LEFT:
         return getRedLeftCommand();
-        // case RED_RIGHT:
-        //   return getRedRightCommand();
+      case RED_RIGHT:
+          return getRedRightCommand();
       case BLUE_LEFT:
         return getBlueLeftCommand();
-        // case BLUE_RIGHT:
-        //   return getBlueRightCommand();
+      case BLUE_RIGHT:
+        return getBlueRightCommand();
       default:
         return new WaitCommand(1);
     }

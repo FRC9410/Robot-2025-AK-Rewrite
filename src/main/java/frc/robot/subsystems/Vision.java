@@ -67,6 +67,9 @@ public class Vision extends SubsystemBase {
   }
 
   public String getBestLimelight() {
+    final NetworkTable leftLimelight = NetworkTableInstance.getDefault().getTable(Constants.VisionConstants.LEFT_TABLE);
+    final NetworkTable rightLimelight = NetworkTableInstance.getDefault().getTable(Constants.VisionConstants.RIGHT_TABLE);
+
     LimelightHelpers.PoseEstimate leftPerimeterMeasurement =
         LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-left");
     LimelightHelpers.PoseEstimate rightPerimeterMeasurement =
@@ -74,12 +77,12 @@ public class Vision extends SubsystemBase {
 
     String bestLimelight = "";
 
-    if (leftPerimeterMeasurement != null && tagIds.contains(getTagId(leftTable))) {
+    if (leftPerimeterMeasurement != null && tagIds.contains(getTagId(leftLimelight))) {
       bestLimelight = "limelight-left";
     }
 
     if (rightPerimeterMeasurement != null
-        && tagIds.contains(getTagId(rightTable))
+        && tagIds.contains(getTagId(rightLimelight))
         && ((leftPerimeterMeasurement != null
                 && rightPerimeterMeasurement.avgTagArea > leftPerimeterMeasurement.avgTagArea)
             || bestLimelight.isEmpty())) {
