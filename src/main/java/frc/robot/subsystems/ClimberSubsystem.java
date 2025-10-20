@@ -47,8 +47,7 @@ public class ClimberSubsystem extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
-  }
+  public void periodic() {}
 
   /**
    * Commands the climber to extend or retract to a specified position (in meters).

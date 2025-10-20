@@ -67,8 +67,10 @@ public class Vision extends SubsystemBase {
   }
 
   public String getBestLimelight() {
-    final NetworkTable leftLimelight = NetworkTableInstance.getDefault().getTable(Constants.VisionConstants.LEFT_TABLE);
-    final NetworkTable rightLimelight = NetworkTableInstance.getDefault().getTable(Constants.VisionConstants.RIGHT_TABLE);
+    final NetworkTable leftLimelight =
+        NetworkTableInstance.getDefault().getTable(Constants.VisionConstants.LEFT_TABLE);
+    final NetworkTable rightLimelight =
+        NetworkTableInstance.getDefault().getTable(Constants.VisionConstants.RIGHT_TABLE);
 
     LimelightHelpers.PoseEstimate leftPerimeterMeasurement =
         LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-left");

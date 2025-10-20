@@ -355,7 +355,7 @@ public class RobotContainer {
       case RED_LEFT:
         return getRedLeftCommand();
       case RED_RIGHT:
-          return getRedRightCommand();
+        return getRedRightCommand();
       case BLUE_LEFT:
         return getBlueLeftCommand();
       case BLUE_RIGHT:
@@ -381,7 +381,7 @@ public class RobotContainer {
             controller,
             stateMachine,
             true,
-            new Pose2d(12.536, 1.715, Rotation2d.fromDegrees(125.0)),
+            new Pose2d(13.536, 1.715, Rotation2d.fromDegrees(-120.0)),
             18.0),
         new SwerveDriveCommand(drive, controller, stateMachine, true, ScoringConstants.RED_HP_LEFT),
         new WaitCommand(1),
@@ -419,9 +419,10 @@ public class RobotContainer {
             controller,
             stateMachine,
             true,
-            new Pose2d(12.536, 6.435, Rotation2d.fromDegrees(-125.0)),
+            new Pose2d(13.536, 6.435, Rotation2d.fromDegrees(120.0)),
             18.0),
-        new SwerveDriveCommand(drive, controller, stateMachine, true, ScoringConstants.RED_HP_RIGHT),
+        new SwerveDriveCommand(
+            drive, controller, stateMachine, true, ScoringConstants.RED_HP_RIGHT),
         new WaitCommand(1),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
@@ -432,7 +433,8 @@ public class RobotContainer {
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
         new WaitCommand(0.01),
-        new SwerveDriveCommand(drive, controller, stateMachine, true, ScoringConstants.RED_HP_RIGHT),
+        new SwerveDriveCommand(
+            drive, controller, stateMachine, true, ScoringConstants.RED_HP_RIGHT),
         new WaitCommand(1),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L4)),
@@ -457,7 +459,7 @@ public class RobotContainer {
             controller,
             stateMachine,
             true,
-            new Pose2d(5.304, 6.135, Rotation2d.fromDegrees(-55.0)),
+            new Pose2d(4.014, 6.135, Rotation2d.fromDegrees(-120.0)),
             18.0),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.BLUE_HP_LEFT),
@@ -497,7 +499,7 @@ public class RobotContainer {
             controller,
             stateMachine,
             true,
-            new Pose2d(5.014, 1.815, Rotation2d.fromDegrees(55.0)),
+            new Pose2d(4.014, 1.815, Rotation2d.fromDegrees(120.0)),
             18.0),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.BLUE_HP_RIGHT),
@@ -519,6 +521,5 @@ public class RobotContainer {
         new WaitCommand(0.01),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.BLUE_FRONT_RIGHT_RIGHT));
-    }
-
+  }
 }

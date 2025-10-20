@@ -158,7 +158,9 @@ public class SwerveDriveCommand extends Command {
       }
 
       double maxSpeed =
-          isClose(currentPose, targetPose) && poseTolerance < 6 ? SLOW_DRIVE_TO_POINT_SPEED : MAX_DRIVE_TO_POINT_SPEED;
+          isClose(currentPose, targetPose) && poseTolerance < 6
+              ? SLOW_DRIVE_TO_POINT_SPEED
+              : MAX_DRIVE_TO_POINT_SPEED;
 
       final Rotation2d directionOfTravel = translationToPoint.getAngle();
       final double velocity =

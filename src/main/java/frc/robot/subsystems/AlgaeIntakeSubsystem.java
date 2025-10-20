@@ -54,8 +54,7 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
-  }
+  public void periodic() {}
 
   /**
    * Holds (stalls) the intake by commanding the motor to maintain its current position using
