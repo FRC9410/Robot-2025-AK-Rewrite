@@ -1,0 +1,277 @@
+superstructure {
+  currentState
+  wantedState
+  autodrive = true/false
+
+  periodic() {
+    handleStateTransitions()
+    updateNearestScoringPosition()
+  }
+
+  setWantedState(state) {
+    this.wantedState = state;
+  }
+
+  handleStateTransitions() {
+    if (this.currentState !== this.wantedState) {
+      this.currentState = readyState // transition/default state
+
+      if (isReadyState()) {
+        this.currentState = this.wantedState
+      }
+    }
+
+    switch(this.currentState) {
+      case scoringL1:
+        executeScoringL1()
+      break
+      case scoringL2:
+        executeScoringL2()
+      break
+      case scoringL3:
+        executeScoringL3()
+      break
+      case scoringL4:
+        executeScoringL4()
+      break
+      case climbing:
+        executeClimbing()
+      break
+    }
+  }
+
+  isReadyState() {
+    if () { // check subsystems for readiness
+      return true
+    }
+    return false
+  }
+
+  updateNearestScoringPosition() {
+    drivetrain.setNearestScoringPosition(localization.getClosestScoringPosition());
+  }
+
+  executeScoringL4() {
+    if (endEffector.hasGamePiece()) {
+      if (localization.isInScoringPosition()) {
+        if (!elevator.isAtPosition(elevatorPositions.level4)) {
+          elevator.moveToPosition(elevatorPositions.level4);
+        }
+        if {elevator.isAtPosition(elevatorPositions.level4)} {
+          endEffector.setOn();
+        }
+      } else {
+        if (!elevator.isAtPosition(elevatorPositions.home)) {
+          elevator.goToPosition(elevatorPositions.home);
+          endEffector.setOff();
+        }
+        if (autodrive) {
+          drivetrain.driveToPosition(localization.targetScoringPosition);
+        }
+      }
+
+    } else {
+      if (!elevator.isAtPosition(elevatorPositions.home)) {
+        elevator.goToPosition(elevatorPositions.home);
+        endEffector.setOff();
+      }
+
+      setWantedState(intaking);
+    }
+  }
+}
+
+localization {//same as vision subsystem
+  targetScoringPosition
+  distanceToTargetThreshold = 0.01 // example/magic number
+
+  periodic() {
+    updateTargetScoringPosition()
+  }
+
+  updateTargetScoringPosition() {
+    this.targetScoringPosition = getClosestScoringPosition();
+  }
+
+  isInScoringPosition() {
+    currentPosition = getCurrentPosition();
+    return currentPosition.distanceTo(this.targetScoringPosition) < this.distanceToTargetThreshold;
+  }
+
+  getClosestScoringPosition() {
+    // Implement logic to find the closest scoring position
+    return closestPosition;
+  }
+}
+
+
+
+
+
+
+AIDAN: 
+Options for coral scoring selector:
+    1. Condense the states:
+        All coral states would be replaced with state SCORE_CORAL
+        The SCORE_CORAL state would call this, and depending on shuffleboard input, it would pick with executable to be called.
+        This is called periodically. 
+        Essentially an extra step between the current executables and the parent state machine switch block.
+
+        Could break it up for more abstraction.
+
+
+        coralPlacementHandler() {
+            switch (shuffleboard.side) {
+                CASE: LEFT {
+                    switch (shuffleboard.coralLevel) {
+                        CASE: CoralL1 {
+                            executeScoreCoralLeftL1();
+                            break;
+                        }
+                        CASE: CoralL2 {
+                            executeScoreCoralLeftL2();
+                            break;
+                        }
+                        ...
+                        default: {
+                            break;
+                        }
+                    }
+                }
+                CASE: RIGHT {
+                    switch (shuffleboard.coralLevel) {
+                        CASE: CoralL1 {
+                            executeScoreCoralRightL1();
+                            break;
+                        }
+                        CASE: CoralL2 {
+                            executeScoreCoralRightL2();
+                            break;
+                        }
+                        ...
+                        default: {
+                            break;
+                        }
+                    }
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+
+
+    2. 
+
+
+
+    Utility Function for checking if you are in an area (like a hexagon that is slightly bigger than the reef)
+    ---------------------
+    take in a list of (x,y) coordinates (called Points in wpilib?) and current (x, y) coordinates
+    -draw shape?
+    check if coordinate is within imaginary bounds (shape?)
+
+    // no idea if this is a thing...
+    List<Point> points = passed in points
+    Shape shape = new Shape(points)
+    shape.contains(location)
+
+
+
+
+    import edu.wpi.first.math.geometry.Translation2d;
+import java.util.List;
+
+public final class GeometryUtil {
+  private GeometryUtil() {}
+
+  /** Returns true if point p is inside polygon poly (or on its boundary).
+   *  poly: vertices in order (clockwise or ccw), not necessarily closed.
+   */
+  public static boolean pointInPolygon(List<Translation2d> poly, Translation2d p) {
+    int n = poly.size();
+    if (n < 3) return false;
+
+    // Treat "on an edge" as inside
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+      if (pointOnSegment(poly.get(j), poly.get(i), p, 1e-9)) return true;
+    }
+
+    boolean inside = false;
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+      double xi = poly.get(i).getX(), yi = poly.get(i).getY();
+      double xj = poly.get(j).getX(), yj = poly.get(j).getY();
+      boolean intersect = ((yi > p.getY()) != (yj > p.getY())) &&
+          (p.getX() < (xj - xi) * (p.getY() - yi) / ((yj - yi) == 0 ? 1e-12 : (yj - yi)) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  private static boolean pointOnSegment(Translation2d a, Translation2d b, Translation2d p, double eps) {
+    double ax = a.getX(), ay = a.getY();
+    double bx = b.getX(), by = b.getY();
+    double px = p.getX(), py = p.getY();
+
+    double abx = bx - ax, aby = by - ay;
+    double apx = px - ax, apy = py - ay;
+
+    double cross = abx * apy - aby * apx;
+    if (Math.abs(cross) > eps) return false;
+
+    double dot = abx * apx + aby * apy;
+    if (dot < -eps) return false;
+
+    double ab2 = abx * abx + aby * aby;
+    if (dot > ab2 + eps) return false;
+
+    return true;
+  }
+}
+
+
+
+
+List<Translation2d> polygon = List.of(
+  new Translation2d(1.0, 1.0),
+  new Translation2d(4.0, 1.0),
+  new Translation2d(4.0, 3.0),
+  new Translation2d(2.0, 4.0),
+  new Translation2d(1.0, 3.0)
+);
+Translation2d robot = new Translation2d(xMeters, yMeters);
+boolean inside = GeometryUtil.pointInPolygon(polygon, robot);
+
+
+
+import edu.wpi.first.math.filter.SlewRateLimiter;
+
+public class AccelOnlyLimiter {
+  // units per second (e.g., joystick [-1..1] per second)
+  private final SlewRateLimiter magLimiter =
+      new SlewRateLimiter( /*positive*/ 2.0, /*negative*/ Double.POSITIVE_INFINITY );
+
+  /** Limit acceleration only. Decreases toward 0 are unbounded. */
+  public double calculate(double input) {
+    double sign = Math.signum(input);
+    double limitedMag = magLimiter.calculate(Math.abs(input));
+    return sign * limitedMag;
+  }
+
+  /** If you need to “snap” to a new state (e.g., when enabling). */
+  public void reset(double currentCommand) {
+    magLimiter.reset(Math.abs(currentCommand));
+  }
+}
+
+
+double throttle = -controller.getLeftY(); // [-1..1]
+double accelOnlyThrottle = accelLimiter.calculate(throttle);
+drive.arcadeDrive(accelOnlyThrottle, turn);
+
+
+
+
+
+
+    
