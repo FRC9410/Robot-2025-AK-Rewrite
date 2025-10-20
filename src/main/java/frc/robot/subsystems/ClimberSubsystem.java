@@ -48,7 +48,6 @@ public class ClimberSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // System.out.println("Climber position: " + climberMotor.getPosition().getValueAsDouble());
   }
 
   /**
@@ -70,7 +69,6 @@ public class ClimberSubsystem extends SubsystemBase {
   }
 
   public boolean climbingPositionIsSet() {
-    System.out.println(setpoint);
     return (setpoint == Constants.ClimberConstants.WINCH_EXTENSION_POSITION);
   }
 

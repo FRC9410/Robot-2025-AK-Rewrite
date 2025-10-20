@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ScoringConstants;
 import frc.robot.commands.SwerveDriveCommand;
+import frc.robot.commands.WaitToScoreCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeIntakeSubsystem;
 import frc.robot.subsystems.AlgaeWristSubsystem;
@@ -375,7 +376,7 @@ public class RobotContainer {
         new WaitCommand(0.01),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.RED_BACK_LEFT_RIGHT),
-        new WaitCommand(2),
+        new WaitToScoreCommand(sensorsSubsystem),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L4)),
         new WaitCommand(0.01),
@@ -385,20 +386,20 @@ public class RobotContainer {
             stateMachine,
             true,
             new Pose2d(12.536, 1.715, Rotation2d.fromDegrees(125.0)),
-            6.0),
+            18.0),
         new SwerveDriveCommand(drive, controller, stateMachine, true, ScoringConstants.RED_HP_LEFT),
-        new WaitCommand(2),
+        new WaitCommand(1),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
         new WaitCommand(0.01),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.RED_FRONT_LEFT_LEFT),
-        new WaitCommand(2),
+        new WaitToScoreCommand(sensorsSubsystem),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
         new WaitCommand(0.01),
         new SwerveDriveCommand(drive, controller, stateMachine, true, ScoringConstants.RED_HP_LEFT),
-        new WaitCommand(2),
+        new WaitCommand(1),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L4)),
         new WaitCommand(0.01),
@@ -406,57 +407,43 @@ public class RobotContainer {
             drive, controller, stateMachine, true, ScoringConstants.RED_FRONT_LEFT_RIGHT));
   }
 
-  // public Command getRedRightCommand() {
-  //   return new SequentialCommandGroup(
-  //     new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.RED_BACK_RIGHT_LEFT),
-  //     new ParallelRaceGroup(
-  //       new ElevatorPositionCommand(elevatorSubsystem, sensorsSubsystem,
-  // Constants.ElevatorConstants.L4_SCORE_POSITION, true),
-  //       new EndEffectorCommand(subsystems.getEndEffector(),
-  // Constants.EndEffectorConstants.END_EFFECTOR_VOLTAGE, elevatorSubsystem, sensorsSubsystem,
-  // subsystems.getDashboard(), subsystems.getActionController())),
-  //     new GotoSafeDriveCommand(drive, new Pose2d(12.536, 6.435, Rotation2d.fromDegrees(-125.0))),
-  //     new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.RED_HP_RIGHT_AUTO),
-  //     new ParallelRaceGroup(
-  //       new AutoEndEffectorCommand(subsystems.getEndEffector(), sensorsSubsystem,
-  // elevatorSubsystem, subsystems.getDashboard()),
-  //       new AutoHopperCommand(subsystems.getHopper(), sensorsSubsystem),
-  //       new WaitCommand(0.75)),
-  //     new ParallelRaceGroup(
-  //       new AutoEndEffectorCommand(subsystems.getEndEffector(), sensorsSubsystem,
-  // elevatorSubsystem, subsystems.getDashboard()),
-  //       new AutoHopperCommand(subsystems.getHopper(), sensorsSubsystem),
-  //       new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.RED_FRONT_RIGHT_LEFT)),
-  //     new ParallelRaceGroup(
-  //       new ElevatorPositionCommand(elevatorSubsystem, sensorsSubsystem,
-  // Constants.ElevatorConstants.L4_SCORE_POSITION, false),
-  //       new EndEffectorCommand(subsystems.getEndEffector(),
-  // Constants.EndEffectorConstants.END_EFFECTOR_VOLTAGE, elevatorSubsystem, sensorsSubsystem,
-  // subsystems.getDashboard(), subsystems.getActionController())),
-  //     new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.RED_HP_RIGHT_AUTO),
-  //     new ParallelRaceGroup(
-  //       new AutoEndEffectorCommand(subsystems.getEndEffector(), sensorsSubsystem,
-  // elevatorSubsystem, subsystems.getDashboard()),
-  //       new AutoHopperCommand(subsystems.getHopper(), sensorsSubsystem),
-  //       new WaitCommand(0.75)),
-  //     new ParallelRaceGroup(
-  //       new AutoEndEffectorCommand(subsystems.getEndEffector(), sensorsSubsystem,
-  // elevatorSubsystem, subsystems.getDashboard()),
-  //       new AutoHopperCommand(subsystems.getHopper(), sensorsSubsystem),
-  //       new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.RED_FRONT_RIGHT_RIGHT)),
-  //     new ParallelRaceGroup(
-  //       new ElevatorPositionCommand(elevatorSubsystem, sensorsSubsystem,
-  // Constants.ElevatorConstants.L4_SCORE_POSITION, false),
-  //       new EndEffectorCommand(subsystems.getEndEffector(),
-  // Constants.EndEffectorConstants.END_EFFECTOR_VOLTAGE, elevatorSubsystem, sensorsSubsystem,
-  // subsystems.getDashboard(), subsystems.getActionController()))
-  //   );
-  // }
+  public Command getRedRightCommand() {
+    return new SequentialCommandGroup(
+        Commands.runOnce(
+            () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
+        new WaitCommand(0.01),
+        new SwerveDriveCommand(
+            drive, controller, stateMachine, true, ScoringConstants.RED_BACK_RIGHT_LEFT),
+        new WaitToScoreCommand(sensorsSubsystem),
+        Commands.runOnce(
+            () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
+        new WaitCommand(0.01),
+        new SwerveDriveCommand(
+            drive,
+            controller,
+            stateMachine,
+            true,
+            new Pose2d(12.536, 6.435, Rotation2d.fromDegrees(-125.0)),
+            18.0),
+        new SwerveDriveCommand(drive, controller, stateMachine, true, ScoringConstants.RED_HP_RIGHT),
+        new WaitCommand(1),
+        Commands.runOnce(
+            () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
+        new WaitCommand(0.01),
+        new SwerveDriveCommand(
+            drive, controller, stateMachine, true, ScoringConstants.RED_FRONT_RIGHT_LEFT),
+        new WaitToScoreCommand(sensorsSubsystem),
+        Commands.runOnce(
+            () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
+        new WaitCommand(0.01),
+        new SwerveDriveCommand(drive, controller, stateMachine, true, ScoringConstants.RED_HP_RIGHT),
+        new WaitCommand(1),
+        Commands.runOnce(
+            () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L4)),
+        new WaitCommand(0.01),
+        new SwerveDriveCommand(
+            drive, controller, stateMachine, true, ScoringConstants.RED_FRONT_RIGHT_RIGHT));
+  }
 
   public Command getBlueLeftCommand() {
     return new SequentialCommandGroup(
@@ -465,7 +452,7 @@ public class RobotContainer {
         new WaitCommand(0.01),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.BLUE_BACK_LEFT_RIGHT),
-        new WaitCommand(2),
+        new WaitToScoreCommand(sensorsSubsystem),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L4)),
         new WaitCommand(0.01),
@@ -475,129 +462,67 @@ public class RobotContainer {
             stateMachine,
             true,
             new Pose2d(5.304, 6.135, Rotation2d.fromDegrees(-55.0)),
-            6.0),
+            18.0),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.BLUE_HP_LEFT),
-        new WaitCommand(2),
+        new WaitCommand(1),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
         new WaitCommand(0.01),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.BLUE_FRONT_LEFT_LEFT),
-        new WaitCommand(2),
+        new WaitToScoreCommand(sensorsSubsystem),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
         new WaitCommand(0.01),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.BLUE_HP_LEFT),
-        new WaitCommand(2),
+        new WaitCommand(1),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L4)),
         new WaitCommand(0.01),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.BLUE_FRONT_LEFT_RIGHT));
   }
-  //     return new SequentialCommandGroup(
-  //     new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.BLUE_BACK_LEFT_RIGHT),
-  //     new ParallelRaceGroup(
-  //       new ElevatorPositionCommand(elevatorSubsystem, sensorsSubsystem,
-  // Constants.ElevatorConstants.L4_SCORE_POSITION, true),
-  //       new EndEffectorCommand(subsystems.getEndEffector(),
-  // Constants.EndEffectorConstants.END_EFFECTOR_VOLTAGE, elevatorSubsystem, sensorsSubsystem,
-  // subsystems.getDashboard(), subsystems.getActionController())),
-  //     new GotoSafeDriveCommand(drive, new Pose2d(5.304, 6.135, Rotation2d.fromDegrees(-55.0))),
-  //     new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.BLUE_HP_LEFT_AUTO),
-  //     new ParallelRaceGroup(
-  //       new AutoEndEffectorCommand(subsystems.getEndEffector(), sensorsSubsystem,
-  // elevatorSubsystem, subsystems.getDashboard()),
-  //       new AutoHopperCommand(subsystems.getHopper(), sensorsSubsystem),
-  //       new WaitCommand(0.75)),
-  //     new ParallelRaceGroup(
-  //       new AutoEndEffectorCommand(subsystems.getEndEffector(), sensorsSubsystem,
-  // elevatorSubsystem, subsystems.getDashboard()),
-  //       new AutoHopperCommand(subsystems.getHopper(), sensorsSubsystem),
-  //       new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.BLUE_FRONT_LEFT_LEFT)),
-  //     new ParallelRaceGroup(
-  //       new ElevatorPositionCommand(elevatorSubsystem, sensorsSubsystem,
-  // Constants.ElevatorConstants.L4_SCORE_POSITION, false),
-  //       new EndEffectorCommand(subsystems.getEndEffector(),
-  // Constants.EndEffectorConstants.END_EFFECTOR_VOLTAGE, elevatorSubsystem, sensorsSubsystem,
-  // subsystems.getDashboard(), subsystems.getActionController())),
-  //     new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.BLUE_HP_LEFT_AUTO),
-  //     new ParallelRaceGroup(
-  //       new AutoEndEffectorCommand(subsystems.getEndEffector(), sensorsSubsystem,
-  // elevatorSubsystem, subsystems.getDashboard()),
-  //       new AutoHopperCommand(subsystems.getHopper(), sensorsSubsystem),
-  //       new WaitCommand(0.75)),
-  //     new ParallelRaceGroup(
-  //       new AutoEndEffectorCommand(subsystems.getEndEffector(), sensorsSubsystem,
-  // elevatorSubsystem, subsystems.getDashboard()),
-  //       new AutoHopperCommand(subsystems.getHopper(), sensorsSubsystem),
-  //       new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.BLUE_FRONT_LEFT_RIGHT)),
-  //     new ParallelRaceGroup(
-  //       new ElevatorPositionCommand(elevatorSubsystem, sensorsSubsystem,
-  // Constants.ElevatorConstants.L4_SCORE_POSITION, false),
-  //       new EndEffectorCommand(subsystems.getEndEffector(),
-  // Constants.EndEffectorConstants.END_EFFECTOR_VOLTAGE, elevatorSubsystem, sensorsSubsystem,
-  // subsystems.getDashboard(), subsystems.getActionController()))
-  //   );
 
-  // public Command getBlueRightCommand() {
-  //   return new SequentialCommandGroup(
-  //     new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.BLUE_BACK_RIGHT_LEFT),
-  //     new ParallelRaceGroup(
-  //       new ElevatorPositionCommand(elevatorSubsystem, sensorsSubsystem,
-  // Constants.ElevatorConstants.L4_SCORE_POSITION, true),
-  //       new EndEffectorCommand(subsystems.getEndEffector(),
-  // Constants.EndEffectorConstants.END_EFFECTOR_VOLTAGE, elevatorSubsystem, sensorsSubsystem,
-  // subsystems.getDashboard(), subsystems.getActionController())),
-  //     new GotoSafeDriveCommand(drive, new Pose2d(5.014, 1.815, Rotation2d.fromDegrees(55.0))),
-  //     new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.BLUE_HP_RIGHT),
-  //     new ParallelRaceGroup(
-  //       new AutoEndEffectorCommand(subsystems.getEndEffector(), sensorsSubsystem,
-  // elevatorSubsystem, subsystems.getDashboard()),
-  //       new AutoHopperCommand(subsystems.getHopper(), sensorsSubsystem),
-  //       new WaitCommand(0.75)),
-  //     new ParallelRaceGroup(
-  //       new AutoEndEffectorCommand(subsystems.getEndEffector(), sensorsSubsystem,
-  // elevatorSubsystem, subsystems.getDashboard()),
-  //       new AutoHopperCommand(subsystems.getHopper(), sensorsSubsystem),
-  //       new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.BLUE_FRONT_RIGHT_LEFT)),
-  //     new ParallelRaceGroup(
-  //       new ElevatorPositionCommand(elevatorSubsystem, sensorsSubsystem,
-  // Constants.ElevatorConstants.L4_SCORE_POSITION, false),
-  //       new EndEffectorCommand(subsystems.getEndEffector(),
-  // Constants.EndEffectorConstants.END_EFFECTOR_VOLTAGE, elevatorSubsystem, sensorsSubsystem,
-  // subsystems.getDashboard(), subsystems.getActionController())),
-  //     new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.BLUE_HP_RIGHT),
-  //     new ParallelRaceGroup(
-  //       new AutoEndEffectorCommand(subsystems.getEndEffector(), sensorsSubsystem,
-  // elevatorSubsystem, subsystems.getDashboard()),
-  //       new AutoHopperCommand(subsystems.getHopper(), sensorsSubsystem),
-  //       new WaitCommand(0.75)),
-  //     new ParallelRaceGroup(
-  //       new AutoEndEffectorCommand(subsystems.getEndEffector(), sensorsSubsystem,
-  // elevatorSubsystem, subsystems.getDashboard()),
-  //       new AutoHopperCommand(subsystems.getHopper(), sensorsSubsystem),
-  //       new SwerveDriveCommand(drive, controller, stateMachine, true,
-  // ScoringConstants.BLUE_FRONT_RIGHT_RIGHT)),
-  //     new ParallelRaceGroup(
-  //       new ElevatorPositionCommand(elevatorSubsystem, sensorsSubsystem,
-  // Constants.ElevatorConstants.L4_SCORE_POSITION, false),
-  //       new EndEffectorCommand(subsystems.getEndEffector(),
-  // Constants.EndEffectorConstants.END_EFFECTOR_VOLTAGE, elevatorSubsystem, sensorsSubsystem,
-  // subsystems.getDashboard(), subsystems.getActionController()))
-  //   );
-  // }n autoChooser.get();
-  //   }
+  public Command getBlueRightCommand() {
+    return new SequentialCommandGroup(
+        Commands.runOnce(
+            () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
+        new WaitCommand(0.01),
+        new SwerveDriveCommand(
+            drive, controller, stateMachine, true, ScoringConstants.BLUE_BACK_RIGHT_LEFT),
+        new WaitToScoreCommand(sensorsSubsystem),
+        Commands.runOnce(
+            () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
+        new WaitCommand(0.01),
+        new SwerveDriveCommand(
+            drive,
+            controller,
+            stateMachine,
+            true,
+            new Pose2d(5.014, 1.815, Rotation2d.fromDegrees(55.0)),
+            18.0),
+        new SwerveDriveCommand(
+            drive, controller, stateMachine, true, ScoringConstants.BLUE_HP_RIGHT),
+        new WaitCommand(1),
+        Commands.runOnce(
+            () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
+        new WaitCommand(0.01),
+        new SwerveDriveCommand(
+            drive, controller, stateMachine, true, ScoringConstants.BLUE_FRONT_RIGHT_LEFT),
+        new WaitToScoreCommand(sensorsSubsystem),
+        Commands.runOnce(
+            () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
+        new WaitCommand(0.01),
+        new SwerveDriveCommand(
+            drive, controller, stateMachine, true, ScoringConstants.BLUE_HP_RIGHT),
+        new WaitCommand(1),
+        Commands.runOnce(
+            () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L4)),
+        new WaitCommand(0.01),
+        new SwerveDriveCommand(
+            drive, controller, stateMachine, true, ScoringConstants.BLUE_FRONT_RIGHT_RIGHT));
+    }
 
 }

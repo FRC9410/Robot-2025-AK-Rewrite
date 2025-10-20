@@ -158,7 +158,7 @@ public class SwerveDriveCommand extends Command {
       }
 
       double maxSpeed =
-          isClose(currentPose, targetPose) ? SLOW_DRIVE_TO_POINT_SPEED : MAX_DRIVE_TO_POINT_SPEED;
+          isClose(currentPose, targetPose) && poseTolerance < 6 ? SLOW_DRIVE_TO_POINT_SPEED : MAX_DRIVE_TO_POINT_SPEED;
 
       final Rotation2d directionOfTravel = translationToPoint.getAngle();
       final double velocity =
@@ -194,10 +194,6 @@ public class SwerveDriveCommand extends Command {
   @Override
   public boolean isFinished() {
     if (requestedPose != null) {
-      System.out.println(
-          "Is in position: "
-              + getIsInPosition(
-                  drivetrain.getState().Pose, requestedPose, drivetrain.getState().Speeds));
       return getIsInPosition(
           drivetrain.getState().Pose, requestedPose, drivetrain.getState().Speeds);
     }
@@ -214,25 +210,7 @@ public class SwerveDriveCommand extends Command {
       }
     }
 
-    List<CoralPositions> leftPositions =
-        Arrays.asList(
-            CoralPositions.LEFT_L1,
-            CoralPositions.LEFT_L2,
-            CoralPositions.LEFT_L3,
-            CoralPositions.LEFT_L4);
-
-    List<CoralPositions> rightPositions =
-        Arrays.asList(
-            CoralPositions.RIGHT_L1,
-            CoralPositions.RIGHT_L2,
-            CoralPositions.RIGHT_L3,
-            CoralPositions.RIGHT_L4);
-
     Pose2d targetPose = null;
-    String coralSide =
-        rightPositions.contains(coralPosition)
-            ? "right"
-            : leftPositions.contains(coralPosition) ? "left" : "";
 
     List<Pose2d> redLeftScoringPoints =
         Arrays.asList(
@@ -285,7 +263,6 @@ public class SwerveDriveCommand extends Command {
         switch (coralPosition) {
           case LEFT_L1, LEFT_L2, LEFT_L3, LEFT_L4:
             targetLocations = blueLeftScoringPoints;
-            System.out.println("Blue scoring point");
             break;
           case RIGHT_L1, RIGHT_L2, RIGHT_L3, RIGHT_L4:
             targetLocations = blueRightScoringPoints;
@@ -334,33 +311,6 @@ public class SwerveDriveCommand extends Command {
       }
     }
 
-    // fill in left and right for blue from constants
-    // List<Pose2d> redLeftScoringPoints = Arrays.asList()
-
-    // pick the correct red/blue and right/left list
-    // List<Pose2d> scoringLocations;
-
-    // double leastDistance;
-    // double indexOfClosestPoint;
-
-    // for (int i = 0; i < 4; i++) {
-    //   Pose2d testPoint = scoringLocations.get(i);
-    //   Translation2d distanceTranslation =
-    // currentPose.getTranslation().minus(testPoint.getTranslation());
-    //   double distance = distanceTranslation.getNorm();
-
-    // check for blank initial values
-
-    //   if (i == 0 || distance < leastDistance) {
-    //     leastDistance = distance;
-    //     indexOfClosestPoint = i;
-    //   }
-    // }
-
-    //
-    // logic goes here to pick the correct zone and drive to point
-    //
-
     return targetPose;
   }
 
@@ -375,7 +325,6 @@ public class SwerveDriveCommand extends Command {
     final Translation2d translationToPoint =
         currentPose.getTranslation().minus(targetPose.getTranslation());
     final double linearDistance = translationToPoint.getNorm();
-    System.out.println("Linear distance to target: " + linearDistance + " meters");
     final double currentVelocity = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
     final double tolerance = poseTolerance > 0 ? poseTolerance : 1;
     return linearDistance < Units.inchesToMeters(tolerance) && currentVelocity < 0.01; // meters

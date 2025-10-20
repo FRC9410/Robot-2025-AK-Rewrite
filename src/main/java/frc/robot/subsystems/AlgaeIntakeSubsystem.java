@@ -55,7 +55,6 @@ public class AlgaeIntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // System.out.println(getHasGamePiece());
   }
 
   /**
