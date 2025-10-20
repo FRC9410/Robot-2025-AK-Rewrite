@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ScoringConstants;
 import frc.robot.commands.SwerveDriveCommand;
+import frc.robot.commands.WaitForGamePieceCommand;
 import frc.robot.commands.WaitToScoreCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeIntakeSubsystem;
@@ -384,7 +385,7 @@ public class RobotContainer {
             new Pose2d(13.536, 1.715, Rotation2d.fromDegrees(-120.0)),
             18.0),
         new SwerveDriveCommand(drive, controller, stateMachine, true, ScoringConstants.RED_HP_LEFT),
-        new WaitCommand(1),
+        new WaitForGamePieceCommand(sensorsSubsystem),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
         new WaitCommand(0.01),
@@ -395,7 +396,7 @@ public class RobotContainer {
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
         new WaitCommand(0.01),
         new SwerveDriveCommand(drive, controller, stateMachine, true, ScoringConstants.RED_HP_LEFT),
-        new WaitCommand(1),
+        new WaitForGamePieceCommand(sensorsSubsystem),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L4)),
         new WaitCommand(0.01),
@@ -423,7 +424,7 @@ public class RobotContainer {
             18.0),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.RED_HP_RIGHT),
-        new WaitCommand(1),
+        new WaitForGamePieceCommand(sensorsSubsystem),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
         new WaitCommand(0.01),
@@ -435,7 +436,7 @@ public class RobotContainer {
         new WaitCommand(0.01),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.RED_HP_RIGHT),
-        new WaitCommand(1),
+        new WaitForGamePieceCommand(sensorsSubsystem),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L4)),
         new WaitCommand(0.01),
@@ -463,7 +464,7 @@ public class RobotContainer {
             18.0),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.BLUE_HP_LEFT),
-        new WaitCommand(1),
+        new WaitForGamePieceCommand(sensorsSubsystem),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
         new WaitCommand(0.01),
@@ -475,7 +476,7 @@ public class RobotContainer {
         new WaitCommand(0.01),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.BLUE_HP_LEFT),
-        new WaitCommand(1),
+        new WaitForGamePieceCommand(sensorsSubsystem),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L4)),
         new WaitCommand(0.01),
@@ -503,7 +504,7 @@ public class RobotContainer {
             18.0),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.BLUE_HP_RIGHT),
-        new WaitCommand(1),
+        new WaitForGamePieceCommand(sensorsSubsystem),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.LEFT_L4)),
         new WaitCommand(0.01),
@@ -515,7 +516,7 @@ public class RobotContainer {
         new WaitCommand(0.01),
         new SwerveDriveCommand(
             drive, controller, stateMachine, true, ScoringConstants.BLUE_HP_RIGHT),
-        new WaitCommand(1),
+        new WaitForGamePieceCommand(sensorsSubsystem),
         Commands.runOnce(
             () -> stateMachine.setSelectedCoralPosition(StateMachine.CoralPositions.RIGHT_L4)),
         new WaitCommand(0.01),
