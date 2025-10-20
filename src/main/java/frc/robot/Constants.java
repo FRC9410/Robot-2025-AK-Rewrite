@@ -149,13 +149,13 @@ public final class Constants {
     public static final double CLIMBER_DEFAULT_POSITION = 0.0; // Placeholder value
 
     // PID Constants (placeholders—adjust as needed)
-    public static final double kP = 0.5;
+    public static final double kP = 10.0;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
     public static final double kF = 0.0;
 
     // Additional constants for Climber: winch extension and climb units (placeholders)
-    public static final double WINCH_EXTENSION_POSITION = 2.0; // Placeholder value
+    public static final double WINCH_EXTENSION_POSITION = 192; // Placeholder value
     public static final double WINCH_CLIMB_POSITION = 1.8; // Placeholder value
     public static final double CLIMB_VOLTAGE = 4.0;
     public static final double STOP_VOLTAGE = 0.0;
@@ -264,19 +264,19 @@ public final class Constants {
 
     // Blue Side
     public static final Pose2d BLUE_FRONT_LEFT =
-        new Pose2d(3.193, 4.191, Rotation2d.fromDegrees(180.0));
+        new Pose2d(3.193, 4.191, Rotation2d.fromDegrees(0.0));
     public static final Pose2d BLUE_FRONT_RIGHT =
-        new Pose2d(3.193, 3.861, Rotation2d.fromDegrees(180.0));
+        new Pose2d(3.193, 3.861, Rotation2d.fromDegrees(0.0));
 
     public static final Pose2d BLUE_FRONT_LEFT_LEFT =
-        new Pose2d(3.985, 5.228, Rotation2d.fromDegrees(60.0));
+        new Pose2d(3.985, 5.228, Rotation2d.fromDegrees(-60.0));
     public static final Pose2d BLUE_FRONT_LEFT_RIGHT =
-        new Pose2d(3.656, 5.065, Rotation2d.fromDegrees(60.0));
+        new Pose2d(3.656, 5.065, Rotation2d.fromDegrees(-60.0));
 
     public static final Pose2d BLUE_FRONT_RIGHT_LEFT =
-        new Pose2d(3.656, 2.985, Rotation2d.fromDegrees(-60.0));
+        new Pose2d(3.656, 2.985, Rotation2d.fromDegrees(60.0));
     public static final Pose2d BLUE_FRONT_RIGHT_RIGHT =
-        new Pose2d(3.985, 2.820, Rotation2d.fromDegrees(-60.0));
+        new Pose2d(3.985, 2.820, Rotation2d.fromDegrees(60.0));
 
     public static final Pose2d BLUE_BACK_LEFT =
         new Pose2d(5.783, 3.861, Rotation2d.fromDegrees(180.0));
@@ -284,23 +284,22 @@ public final class Constants {
         new Pose2d(5.783, 4.191, Rotation2d.fromDegrees(180.0));
 
     public static final Pose2d BLUE_BACK_LEFT_LEFT =
-        new Pose2d(5.273, 5.065, Rotation2d.fromDegrees(120.0));
+        new Pose2d(5.273, 5.065, Rotation2d.fromDegrees(-120.0));
     public static final Pose2d BLUE_BACK_LEFT_RIGHT =
-        new Pose2d(4.990, 5.228, Rotation2d.fromDegrees(120.0));
+        new Pose2d(4.990, 5.228, Rotation2d.fromDegrees(-120.0));
 
     public static final Pose2d BLUE_BACK_RIGHT_LEFT =
-        new Pose2d(4.990, 2.820, Rotation2d.fromDegrees(-120.0));
+        new Pose2d(4.990, 2.820, Rotation2d.fromDegrees(120.0));
     public static final Pose2d BLUE_BACK_RIGHT_RIGHT =
-        new Pose2d(5.273, 2.985, Rotation2d.fromDegrees(-120.0));
+        new Pose2d(5.273, 2.985, Rotation2d.fromDegrees(120.0));
 
-    public static final Pose2d RED_HP_LEFT = new Pose2d(16.2, 0.95, Rotation2d.fromDegrees(125.0));
-    public static final Pose2d RED_HP_RIGHT =
-        new Pose2d(16.2, 7.25, Rotation2d.fromDegrees(-125.0));
+    public static final Pose2d RED_HP_LEFT = new Pose2d(16.2, 0.95, Rotation2d.fromDegrees(-55));
+    public static final Pose2d RED_HP_RIGHT = new Pose2d(16.2, 7.25, Rotation2d.fromDegrees(55));
     public static final Pose2d RED_HP_RIGHT_AUTO =
         new Pose2d(16.2, 7.05, Rotation2d.fromDegrees(-125.0));
 
-    public static final Pose2d BLUE_HP_LEFT = new Pose2d(1.3, 7.25, Rotation2d.fromDegrees(-55.0));
-    public static final Pose2d BLUE_HP_RIGHT = new Pose2d(1.3, 0.95, Rotation2d.fromDegrees(55.0));
+    public static final Pose2d BLUE_HP_LEFT = new Pose2d(1.3, 7.25, Rotation2d.fromDegrees(-55));
+    public static final Pose2d BLUE_HP_RIGHT = new Pose2d(1.3, 0.95, Rotation2d.fromDegrees(55));
     public static final Pose2d BLUE_HP_LEFT_AUTO =
         new Pose2d(1.3, 7.05, Rotation2d.fromDegrees(-55.0));
   }

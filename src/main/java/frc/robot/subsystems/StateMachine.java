@@ -42,6 +42,7 @@ public class StateMachine extends SubsystemBase {
     this.endEffectorSubsystem = endEffectorSubsystem;
     this.climberSubsystem = climberSubsystem;
     this.drive = drive;
+    isInPosition = false;
   }
 
   RobotState INIT_STATE = RobotState.READY_STATE;
@@ -95,6 +96,7 @@ public class StateMachine extends SubsystemBase {
 
   @Override
   public void periodic() {
+    System.out.println("Current State: " + currentRobotState);
     handleRobotStateTransitions();
     if (!sensorsSubsystem.hasPiece()) { // if no piece
       if (sensorsSubsystem.isIntakeLaserBroken()) { // if intake beam broken
@@ -192,7 +194,13 @@ public class StateMachine extends SubsystemBase {
     }
   }
 
-  private void executeClimbState() {}
+  private void executeClimbState() {
+    System.out.println("execute climb");
+    if (!climberSubsystem.climbingPositionIsSet()) {
+      System.out.println("Climbing");
+      climberSubsystem.setPosition(Constants.ClimberConstants.WINCH_EXTENSION_POSITION);
+    }
+  }
 
   private void executeIntakeCoral() {
     if (!sensorsSubsystem.hasPiece()) { // if no piece
@@ -348,5 +356,9 @@ public class StateMachine extends SubsystemBase {
 
   public void setIsInPosition(boolean isInPosition) {
     this.isInPosition = isInPosition;
+  }
+
+  public ClimberSubsystem getClimberSubsystem() {
+    return climberSubsystem;
   }
 }

@@ -12,7 +12,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private final TalonFX climberMotor;
   private final PositionVoltage positionRequest;
   private double voltage;
-  private double setpoint;
+  public double setpoint;
 
   /**
    * Constructor for the Climber subsystem.
@@ -25,10 +25,9 @@ public class ClimberSubsystem extends SubsystemBase {
     positionRequest = new PositionVoltage(0).withSlot(0);
 
     TalonFXConfiguration config = new TalonFXConfiguration();
-    // config.Slot0.kP = Constants.ClimberConstants.kP;
-    // config.Slot0.kI = Constants.ClimberConstants.kI;
-    // config.Slot0.kD = Constants.ClimberConstants.kD;
-    // config.Slot0.kG = Constants.ClimberConstants.kF;
+    config.Slot0.kP = Constants.ClimberConstants.kP;
+    config.Slot0.kI = Constants.ClimberConstants.kI;
+    config.Slot0.kD = Constants.ClimberConstants.kD;
 
     // Set up soft limits to prevent over-extension or over-retraction.
     // config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
@@ -41,6 +40,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     // Set brake mode so the winch holds its position when no power is applied.
     climberMotor.setNeutralMode(NeutralModeValue.Brake);
+    zeroEncoder();
 
     voltage = Constants.ClimberConstants.STOP_VOLTAGE;
     setpoint = 0.0;
@@ -59,8 +59,19 @@ public class ClimberSubsystem extends SubsystemBase {
   public void setPosition(double position) {
     if (position != setpoint) {
       setpoint = position;
-      climberMotor.setControl(positionRequest.withPosition(position));
+      climberMotor.setControl(positionRequest.withPosition(-position));
     }
+  }
+
+  public boolean isAtExtensionPosition() {
+    final double error = 1.0;
+    final double lowerBound = Constants.ClimberConstants.WINCH_EXTENSION_POSITION - error;
+    return (getCurrentExtension() >= lowerBound);
+  }
+
+  public boolean climbingPositionIsSet() {
+    System.out.println(setpoint);
+    return (setpoint == Constants.ClimberConstants.WINCH_EXTENSION_POSITION);
   }
 
   /**

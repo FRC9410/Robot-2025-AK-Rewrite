@@ -40,11 +40,11 @@ public class SensorsSubsystem extends SubsystemBase {
   @Override
   public void periodic() {}
 
-  private double getIntakeLaserMeasurement() {
+  public double getIntakeLaserMeasurement() {
     return intakeLaser.getMeasurement().distance_mm;
   }
 
-  private double getOuttakeLaserMeasurement() {
+  public double getOuttakeLaserMeasurement() {
     return intakeLaser.getMeasurement().distance_mm;
   }
 

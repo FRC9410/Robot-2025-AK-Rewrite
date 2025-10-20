@@ -49,6 +49,8 @@ public class SwerveDriveCommand extends Command {
   private final boolean autoDrive;
   private final double STATIC_FRICTION_CONSTANT;
   private final PIDController driveToPointController;
+  private Pose2d requestedPose;
+  private double poseTolerance;
 
   /** Creates a new DriveCommand. */
   public SwerveDriveCommand(
@@ -60,6 +62,51 @@ public class SwerveDriveCommand extends Command {
     this.controller = controller;
     this.stateMachine = stateMachine;
     this.autoDrive = autoDrive;
+    this.requestedPose = null;
+    this.poseTolerance = -1;
+    this.STATIC_FRICTION_CONSTANT =
+        0.085; // Adjust this value based on your robot's characteristics
+    this.driveToPointController = new PIDController(3.2, 0, 0.2);
+
+    addRequirements(drivetrain);
+    // Use addRequirements() here to declare subsystem dependencies.
+  }
+
+  /** Creates a new DriveCommand. */
+  public SwerveDriveCommand(
+      Swerve drivetrain,
+      CommandXboxController controller,
+      StateMachine stateMachine,
+      boolean autoDrive,
+      Pose2d requestedPose) {
+    this.drivetrain = drivetrain;
+    this.controller = controller;
+    this.stateMachine = stateMachine;
+    this.autoDrive = autoDrive;
+    this.requestedPose = requestedPose;
+    this.poseTolerance = -1.0;
+    this.STATIC_FRICTION_CONSTANT =
+        0.085; // Adjust this value based on your robot's characteristics
+    this.driveToPointController = new PIDController(3.2, 0, 0.2);
+
+    addRequirements(drivetrain);
+    // Use addRequirements() here to declare subsystem dependencies.
+  }
+
+  /** Creates a new DriveCommand. */
+  public SwerveDriveCommand(
+      Swerve drivetrain,
+      CommandXboxController controller,
+      StateMachine stateMachine,
+      boolean autoDrive,
+      Pose2d requestedPose,
+      double poseTolerance) {
+    this.drivetrain = drivetrain;
+    this.controller = controller;
+    this.stateMachine = stateMachine;
+    this.autoDrive = autoDrive;
+    this.requestedPose = requestedPose;
+    this.poseTolerance = poseTolerance;
     this.STATIC_FRICTION_CONSTANT =
         0.085; // Adjust this value based on your robot's characteristics
     this.driveToPointController = new PIDController(3.2, 0, 0.2);
@@ -78,21 +125,14 @@ public class SwerveDriveCommand extends Command {
     final Pose2d currentPose = drivetrain.getState().Pose;
     Pose2d targetPose = null;
 
-    if (currentPose != null) {
-      // if (controller.a().getAsBoolean()) {
-      //   targetPose = Constants.AutoConstants.TEST_POSITION;
-      // } else if (controller.y().getAsBoolean()) {
-      //   targetPose = new Pose2d();
-      // } else if (controller.x().getAsBoolean()) {
-      //   targetPose = Constants.AutoConstants.TEST_POSITION2;
-      // } else if (controller.b().getAsBoolean()) {
-      //   targetPose = Constants.AutoConstants.TEST_POSITION3;
-      // }
+    if (currentPose != null && requestedPose == null) {
       targetPose =
           getTargetPose(
               currentPose,
               stateMachine.getCurrentRobotState(),
               stateMachine.getCurrentCoralPosition());
+    } else if (currentPose != null && requestedPose != null) {
+      targetPose = requestedPose;
     }
 
     if (currentPose == null || targetPose == null) stateMachine.setIsInPosition(false);
@@ -100,7 +140,15 @@ public class SwerveDriveCommand extends Command {
       stateMachine.setIsInPosition(
           getIsInPosition(currentPose, targetPose, drivetrain.getState().Speeds));
 
-    if (currentPose != null && targetPose != null && autoDrive) {
+    if (currentPose != null && targetPose != null && (autoDrive || requestedPose != null)) {
+      boolean isBlueAlliance = true;
+      if (DriverStation.getAlliance().isPresent()) {
+        if (DriverStation.getAlliance().get() == Alliance.Red) {
+          isBlueAlliance = false;
+        }
+      }
+      final double directionMultiplier = isBlueAlliance ? -1.0 : 1.0;
+
       final Translation2d translationToPoint =
           currentPose.getTranslation().minus(targetPose.getTranslation());
       final double linearDistance = translationToPoint.getNorm();
@@ -115,8 +163,8 @@ public class SwerveDriveCommand extends Command {
       final Rotation2d directionOfTravel = translationToPoint.getAngle();
       final double velocity =
           Math.min(Math.abs(driveToPointController.calculate(linearDistance, 0)) + ff, maxSpeed);
-      final double xSpeed = velocity * directionOfTravel.getCos();
-      final double ySpeed = velocity * directionOfTravel.getSin();
+      final double xSpeed = velocity * directionOfTravel.getCos() * directionMultiplier;
+      final double ySpeed = velocity * directionOfTravel.getSin() * directionMultiplier;
 
       drivetrain.drive(
           -xSpeed, -ySpeed, targetPose.getRotation().getDegrees(), Swerve.DriveMode.DRIVE_TO_POINT);
@@ -145,6 +193,14 @@ public class SwerveDriveCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+    if (requestedPose != null) {
+      System.out.println(
+          "Is in position: "
+              + getIsInPosition(
+                  drivetrain.getState().Pose, requestedPose, drivetrain.getState().Speeds));
+      return getIsInPosition(
+          drivetrain.getState().Pose, requestedPose, drivetrain.getState().Speeds);
+    }
     return false;
   }
 
@@ -214,44 +270,67 @@ public class SwerveDriveCommand extends Command {
             Constants.ScoringConstants.BLUE_BACK_RIGHT_RIGHT,
             Constants.ScoringConstants.BLUE_FRONT_RIGHT_RIGHT);
 
-    List<Pose2d> scoringLocations = null;
-    if (isBlueAlliance) {
-      switch (coralPosition) {
-        case LEFT_L1, LEFT_L2, LEFT_L3, LEFT_L4:
-          scoringLocations = blueLeftScoringPoints;
-          break;
-        case RIGHT_L1, RIGHT_L2, RIGHT_L3, RIGHT_L4:
-          scoringLocations = blueRightScoringPoints;
-          break;
-        default:
-          return null;
+    List<Pose2d> blueIntakingPoints =
+        Arrays.asList(
+            Constants.ScoringConstants.BLUE_HP_LEFT, Constants.ScoringConstants.BLUE_HP_RIGHT);
+
+    List<Pose2d> redIntakingPoints =
+        Arrays.asList(
+            Constants.ScoringConstants.RED_HP_LEFT, Constants.ScoringConstants.RED_HP_RIGHT);
+
+    List<Pose2d> targetLocations = null; // change to target locations
+    // if state scoral
+    if (stateMachine.getCurrentRobotState() == RobotState.SCORAL) {
+      if (isBlueAlliance) {
+        switch (coralPosition) {
+          case LEFT_L1, LEFT_L2, LEFT_L3, LEFT_L4:
+            targetLocations = blueLeftScoringPoints;
+            System.out.println("Blue scoring point");
+            break;
+          case RIGHT_L1, RIGHT_L2, RIGHT_L3, RIGHT_L4:
+            targetLocations = blueRightScoringPoints;
+            break;
+          default:
+            return null;
+        }
+      } else {
+        switch (coralPosition) {
+          case LEFT_L1, LEFT_L2, LEFT_L3, LEFT_L4:
+            targetLocations = redLeftScoringPoints;
+            break;
+          case RIGHT_L1, RIGHT_L2, RIGHT_L3, RIGHT_L4:
+            targetLocations = redRightScoringPoints;
+            break;
+          default:
+            return null;
+        }
+      }
+    } else if (stateMachine.getCurrentRobotState() == RobotState.INTAKE_CORAL) {
+      if (isBlueAlliance) {
+        targetLocations = blueIntakingPoints;
+      } else {
+        targetLocations = redIntakingPoints;
       }
     } else {
-      switch (coralPosition) {
-        case LEFT_L1, LEFT_L2, LEFT_L3, LEFT_L4:
-          scoringLocations = redLeftScoringPoints;
-          break;
-        case RIGHT_L1, RIGHT_L2, RIGHT_L3, RIGHT_L4:
-          scoringLocations = redRightScoringPoints;
-          break;
-        default:
-          return null;
-      }
     }
+
+    // if state intaking
+    // ...
 
     double leastDistance = 0;
     double indexOfClosestPoint;
+    if (targetLocations != null) {
+      for (int i = 0; i < targetLocations.size(); i++) {
+        Pose2d testPoint = targetLocations.get(i);
+        Translation2d distanceTranslation =
+            currentPose.getTranslation().minus(testPoint.getTranslation());
+        double distance = Math.abs(distanceTranslation.getNorm());
 
-    for (int i = 0; i < scoringLocations.size(); i++) {
-      Pose2d testPoint = scoringLocations.get(i);
-      Translation2d distanceTranslation =
-          currentPose.getTranslation().minus(testPoint.getTranslation());
-      double distance = Math.abs(distanceTranslation.getNorm());
-
-      if (i == 0 || distance < leastDistance) {
-        leastDistance = distance;
-        indexOfClosestPoint = i;
-        targetPose = testPoint;
+        if (i == 0 || distance < leastDistance) {
+          leastDistance = distance;
+          indexOfClosestPoint = i;
+          targetPose = testPoint;
+        }
       }
     }
 
@@ -296,8 +375,10 @@ public class SwerveDriveCommand extends Command {
     final Translation2d translationToPoint =
         currentPose.getTranslation().minus(targetPose.getTranslation());
     final double linearDistance = translationToPoint.getNorm();
+    System.out.println("Linear distance to target: " + linearDistance + " meters");
     final double currentVelocity = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
-    return linearDistance < Units.inchesToMeters(1) && currentVelocity < 0.01; // meters
+    final double tolerance = poseTolerance > 0 ? poseTolerance : 1;
+    return linearDistance < Units.inchesToMeters(tolerance) && currentVelocity < 0.01; // meters
   }
 
   private ChassisSpeeds calculateSpeedsBasedOnJoystickInputs() {
